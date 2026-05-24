@@ -147,6 +147,24 @@ def extract_url(text: str):
     m = re.search(r"https?://\S+", text)
     return m.group(0) if m else None
 
+def is_any_url(text: str) -> bool:
+    return bool(re.search(r"https?://\S+", text))
+
+def keep_alive():
+    """Pings the web server to keep it alive on Render."""
+    render_url = os.environ.get("RENDER_EXTERNAL_URL")
+    url = f"{render_url}/home" if render_url else "http://localhost:8000/home"
+    while True:
+        try:
+            requests.get(url, timeout=10)
+        except Exception:
+            pass
+        time.sleep(300) # Ping every 5 minutes
+
+import threading
+import time
+threading.Thread(target=keep_alive, daemon=True).start()
+
 def check_fsub(uid: int, chat_id: int) -> list:
     if not sync_fsub_enabled():
         return []
@@ -367,151 +385,93 @@ def handle_download(msg, url: str):
     if is_xham_url(url):    _handle_xham(msg, url, uid, lang);    return
     if is_hcity_url(url):   _handle_hcity(msg, url, uid, lang);   return
 
-    if not is_direct_dl_platform(url):
-        thinking = bot.reply_to(msg, "Be Patient We Are Working...\n 10%", parse_mode="HTML")
-        data = dl_fetch(url)
-        _safe_delete(msg.chat.id, thinking.message_id)
-        if not data.get("success"):
-            kb = InlineKeyboardMarkup()
-            kb.row(InlineKeyboardButton(" Open / Download", url=url))
-            bot.reply_to(msg, "<b>Direct link ready</b>\n\n<i>Tap below to open or download</i>",
-                         parse_mode="HTML", reply_markup=kb)
-            send_ad_to_user(msg.chat.id, uid)
-            return
+    thinking = bot.reply_to(msg, "<blockquote>⏳ <b>Wait A Minute... We Are Finding Your Files!</b></blockquote>", parse_mode="HTML")
+    data = dl_fetch(url)
+    _safe_delete(msg.chat.id, thinking.message_id)
 
-        medias   = data.get("medias", [])
-        title    = (data.get("title") or "Media")[:60]
-        platform = (data.get("source") or "").capitalize()
-        thumb    = data.get("thumbnail","")
+    if not data.get("success"):
+        kb = InlineKeyboardMarkup()
+        kb.row(InlineKeyboardButton("🔗 Open Link", url=url))
+        bot.reply_to(msg, 
+            "<blockquote><b>Oops! Platform Not Supported Yet</b></blockquote>\n\n"
+            "<i>\"Great things take time. We are working hard to support this platform!\"</i>\n\n"
+            "<b>Stay Tuned! Coming Soon...</b> 🚀",
+            parse_mode="HTML", reply_markup=kb)
+        return
 
-        if not medias:
-            kb = InlineKeyboardMarkup()
-            kb.row(InlineKeyboardButton(" Open / Download", url=url))
-            bot.reply_to(msg, f"<b>{title}</b>\n {platform}", parse_mode="HTML", reply_markup=kb)
-            send_ad_to_user(msg.chat.id, uid)
-            return
+    medias   = data.get("medias", [])
+    title    = (data.get("title") or "Media")[:60]
+    platform = (data.get("source") or "").capitalize()
+    thumb    = data.get("thumbnail","")
 
-        sync_increment_count(uid, f"dl_{_day_key()}")
-        filtered = _filter_min_quality(medias)
-        kb  = InlineKeyboardMarkup()
-        row = []
-        seen = set()
-        for m in filtered:
-            dl_url = m.get("url") or m.get("download_url","")
-            if not dl_url: continue
-            ext    = (m.get("ext") or "").lower()
-            height = m.get("height") or 0
-            if ext not in AUDIO_EXTS:
-                key = (height, ext)
-                if height and ext == "webm" and (height, "mp4") in seen: continue
-                seen.add(key)
-            qual  = m.get("quality") or m.get("label") or ext.upper()
-            icon  = "" if ext in AUDIO_EXTS else ""
-            label = f"{icon} {qual}{_size_label(m)}"
-            row.append(InlineKeyboardButton(label, url=dl_url))
-            if len(row) == 2: kb.row(*row); row = []
-        if row: kb.row(*row)
-        caption = f" <b>{title}</b>\n {platform}"
-        try:
-            if thumb and thumb.startswith("http"):
-                bot.send_photo(msg.chat.id, thumb, caption=caption,
-                               parse_mode="HTML", reply_markup=kb,
-                               reply_to_message_id=msg.message_id)
-            else:
-                bot.reply_to(msg, caption, parse_mode="HTML", reply_markup=kb)
-        except Exception:
-            bot.reply_to(msg, caption, parse_mode="HTML", reply_markup=kb)
+    if not medias:
+        kb = InlineKeyboardMarkup()
+        kb.row(InlineKeyboardButton("🔗 Direct Link", url=url))
+        bot.reply_to(msg, f"<blockquote><b>{title}</b></blockquote>\n\n<i>Platform: {platform}</i>\n\n<b>Quality:</b> Default", parse_mode="HTML", reply_markup=kb)
         send_ad_to_user(msg.chat.id, uid)
         return
 
-    thinking = bot.reply_to(msg, "⏳ <b>Processing...</b>\n 20%", parse_mode="HTML")
-    data = dl_fetch(url)
-    _safe_delete(msg.chat.id, thinking.message_id)
-    if not data.get("success"):
-        err = data.get("error") or str(data.get("detail","unknown"))
-        bot.reply_to(msg, tf("dl.error", lang, error=err)); return
-    medias = data.get("medias",[])
-    if not medias: bot.reply_to(msg, t("dl.no_media",lang)); return
-    best = get_best_media(medias)
-    if not best: bot.reply_to(msg, t("dl.no_media",lang)); return
-
-    dl_url   = best.get("url") or best.get("download_url","")
-    title    = (data.get("title") or "Media")[:60]
-    platform = (data.get("source") or "").capitalize()
-    ext      = best.get("ext","mp4")
-    quality  = best.get("quality") or ext.upper()
-
-    size_mb = None
-    raw_size = best.get("size")
-    if raw_size:
-        try: size_mb = int(str(raw_size).strip()) / (1024 * 1024)
-        except Exception: pass
-    if size_mb is None:
-        size_mb = get_file_size_mb(dl_url)
-
-    vid_duration = best.get("duration") or 0
-    vid_width    = best.get("width") or 0
-    vid_height   = best.get("height") or 0
-    try: vid_duration = int(vid_duration)
-    except Exception: vid_duration = 0
-
     sync_increment_count(uid, f"dl_{_day_key()}")
-    markup = _dl_quality_markup(medias)
+    filtered = _filter_min_quality(medias)
+    
+    kb = InlineKeyboardMarkup()
+    row = []
+    seen = set()
+    for m in filtered:
+        dl_url = m.get("url") or m.get("download_url","")
+        if not dl_url: continue
+        ext    = (m.get("ext") or "").lower()
+        height = m.get("height") or 0
+        if ext not in AUDIO_EXTS:
+            key = (height, ext)
+            if height and ext == "webm" and (height, "mp4") in seen: continue
+            seen.add(key)
+        qual  = m.get("quality") or m.get("label") or ext.upper()
+        icon  = "🎵" if ext in AUDIO_EXTS else "🎬"
+        label = f"{icon} {qual}{_size_label(m)}"
+        row.append(InlineKeyboardButton(label, url=dl_url))
+        if len(row) == 2: kb.row(*row); row = []
+    if row: kb.row(*row)
 
-    send_msg = None
+    caption = (
+        f"<blockquote><b>{title}</b></blockquote>\n\n"
+        f"🌐 <b>Platform:</b> <code>{platform}</code>\n"
+        f"📥 <b>Select Quality To Download:</b>\n\n"
+        f"<i>\"Quality is not an act, it is a habit.\"</i>"
+    )
+
     try:
-        send_msg = bot.reply_to(msg, " <b>Downloading...</b>\n 50%", parse_mode="HTML")
-        file_bytes = requests.get(dl_url, timeout=120).content
-        actual_mb  = len(file_bytes) / (1024 * 1024)
-        _safe_delete(msg.chat.id, send_msg.message_id); send_msg = None
-        caption = (
-            f"<b>{title}</b>\n"
-            f" {platform}  ·   {quality}\n"
-            f" {actual_mb:.1f} MB"
-        )
-        buf = io.BytesIO(file_bytes)
-        buf.name = f"media.{ext}"
-        if ext in AUDIO_EXTS:
-            bot.send_audio(msg.chat.id, buf, caption=caption, title=title,
-                           reply_to_message_id=msg.message_id, reply_markup=markup)
+        if thumb and thumb.startswith("http"):
+            bot.send_photo(msg.chat.id, thumb, caption=caption,
+                           parse_mode="HTML", reply_markup=kb,
+                           reply_to_message_id=msg.message_id)
         else:
-            bot.send_video(msg.chat.id, buf, caption=caption, duration=vid_duration or None,
-                           width=vid_width or None, height=vid_height or None,
-                           reply_to_message_id=msg.message_id,
-                           supports_streaming=True, reply_markup=markup)
-        send_ad_to_user(msg.chat.id, uid)
-    except Exception as e:
-        print(f"[!] Direct send failed: {e}")
-        if send_msg:
-            _safe_delete(msg.chat.id, send_msg.message_id)
-        size_str = f"{size_mb:.1f} MB" if size_mb else "Unknown"
-        kb = InlineKeyboardMarkup()
-        kb.row(InlineKeyboardButton(" Download Now", url=dl_url))
-        if markup:
-            for row in markup.keyboard: kb.row(*row)
-        bot.reply_to(msg, f" <b>{title}</b>\n {platform}  ·   {size_str}",
-                     parse_mode="HTML", reply_markup=kb)
-        send_ad_to_user(msg.chat.id, uid)
+            bot.reply_to(msg, caption, parse_mode="HTML", reply_markup=kb)
+    except Exception:
+        bot.reply_to(msg, caption, parse_mode="HTML", reply_markup=kb)
+    
+    send_ad_to_user(msg.chat.id, uid)
+
 
 
 def _handle_phub(msg, url, uid, lang):
-    thinking = bot.reply_to(msg, "⏳ <b>Fetching Pornhub...</b>", parse_mode="HTML")
+    thinking = bot.reply_to(msg, "<blockquote>⏳ <b>Fetching Pornhub Video...</b></blockquote>", parse_mode="HTML")
     data = dl_fetch_phub(url)
     _safe_delete(msg.chat.id, thinking.message_id)
     if not data.get("success"):
-        bot.reply_to(msg, "Pornhub: " + str(data.get("error","unknown"))); return
+        bot.reply_to(msg, "<blockquote><b>Pornhub Error:</b> " + str(data.get("error","unknown")) + "</blockquote>", parse_mode="HTML"); return
     title   = (data.get("title") or "Video")[:60]
     thumb   = data.get("thumbnail","")
     dur     = data.get("duration") or 0
     formats = data.get("formats") or []
     direct  = [f for f in formats if not str(f.get("format_id","")).startswith("hls")]
     if not direct: direct = formats
-    if not direct: bot.reply_to(msg,"No formats found."); return
+    if not direct: bot.reply_to(msg,"<blockquote><b>No formats found.</b></blockquote>", parse_mode="HTML"); return
     kb = InlineKeyboardMarkup(); row = []
     for f in direct:
         furl = f.get("url","")
         if not furl: continue
-        label = " " + str(f.get("format_id") or str(f.get("height","")) + "p")
+        label = "🎬 " + str(f.get("format_id") or str(f.get("height","")) + "p")
         row.append(InlineKeyboardButton(label, url=furl))
         if len(row)==2: kb.row(*row); row=[]
     if row: kb.row(*row)
@@ -521,7 +481,12 @@ def _handle_phub(msg, url, uid, lang):
         d = int(dur)
         dur_str = f"⏱ {d//3600}h {(d%3600)//60}m" if d>=3600 else (f"⏱ {d//60}m {d%60}s" if d>0 else "")
     except Exception: pass
-    caption = f" <b>{title}</b>" + (f"\n{dur_str}" if dur_str else "") + "\n Pornhub"
+    caption = (
+        f"<blockquote><b>{title}</b></blockquote>\n\n"
+        f"🌐 <b>Platform:</b> <code>Pornhub</code>\n"
+        f"⏳ <b>Duration:</b> {dur_str if dur_str else 'N/A'}\n\n"
+        f"<i>\"Entertainment is the key to relaxation.\"</i>"
+    )
     if thumb and thumb.startswith("http"):
         try:
             bot.send_photo(msg.chat.id, thumb, caption=caption, parse_mode="HTML",
@@ -534,15 +499,15 @@ def _handle_phub(msg, url, uid, lang):
 
 
 def _handle_xham(msg, url, uid, lang):
-    thinking = bot.reply_to(msg, "⏳ <b>Fetching XHamster...</b>", parse_mode="HTML")
+    thinking = bot.reply_to(msg, "<blockquote>⏳ <b>Fetching XHamster Video...</b></blockquote>", parse_mode="HTML")
     data = dl_fetch_xham(url)
     _safe_delete(msg.chat.id, thinking.message_id)
     if not data.get("success"):
-        bot.reply_to(msg, "XHamster: " + str(data.get("error","unknown"))); return
+        bot.reply_to(msg, "<blockquote><b>XHamster Error:</b> " + str(data.get("error","unknown")) + "</blockquote>", parse_mode="HTML"); return
     title   = (data.get("title") or "Video")[:60]
     thumb   = data.get("thumbnail","")
     streams = data.get("streams") or {}
-    if not streams: bot.reply_to(msg,"No streams found."); return
+    if not streams: bot.reply_to(msg,"<blockquote><b>No streams found.</b></blockquote>", parse_mode="HTML"); return
     sync_increment_count(uid, f"dl_{_day_key()}")
     def _hh(k):
         try: return int(k.replace("p",""))
@@ -551,10 +516,14 @@ def _handle_xham(msg, url, uid, lang):
     for q in sorted(streams.keys(), key=_hh):
         surl = streams[q]
         if not surl: continue
-        row.append(InlineKeyboardButton(" " + q, url=surl))
+        row.append(InlineKeyboardButton("🎬 " + q, url=surl))
         if len(row)==2: kb.row(*row); row=[]
     if row: kb.row(*row)
-    caption = f" <b>{title}</b>\n XHamster"
+    caption = (
+        f"<blockquote><b>{title}</b></blockquote>\n\n"
+        f"🌐 <b>Platform:</b> <code>XHamster</code>\n\n"
+        f"<i>\"Quality content for your eyes.\"</i>"
+    )
     if thumb and thumb.startswith("http"):
         try:
             bot.send_photo(msg.chat.id, thumb, caption=caption, parse_mode="HTML",
@@ -567,20 +536,24 @@ def _handle_xham(msg, url, uid, lang):
 
 
 def _handle_hcity(msg, url, uid, lang):
-    thinking = bot.reply_to(msg, "⏳ <b>Fetching HentaiCity...</b>", parse_mode="HTML")
+    thinking = bot.reply_to(msg, "<blockquote>⏳ <b>Fetching HentaiCity Video...</b></blockquote>", parse_mode="HTML")
     data = dl_fetch_hcity(url)
     _safe_delete(msg.chat.id, thinking.message_id)
     if not data.get("success"):
-        bot.reply_to(msg, f"Error: {data.get('error','unknown')}"); return
+        bot.reply_to(msg, f"<blockquote><b>Error:</b> {data.get('error','unknown')}</blockquote>", parse_mode="HTML"); return
     title   = (data.get("title") or "Video")[:60]
     thumb   = data.get("thumbnail","")
     m3u8    = data.get("m3u8","")
     trailer = data.get("trailer","")
     sync_increment_count(uid, f"dl_{_day_key()}")
     kb = InlineKeyboardMarkup()
-    if m3u8:    kb.row(InlineKeyboardButton(" Stream (M3U8)", url=m3u8))
-    if trailer: kb.row(InlineKeyboardButton(" Trailer", url=trailer))
-    caption = f" <b>{title}</b>\n HentaiCity"
+    if m3u8:    kb.row(InlineKeyboardButton("🎬 Stream (M3U8)", url=m3u8))
+    if trailer: kb.row(InlineKeyboardButton("📽 Trailer", url=trailer))
+    caption = (
+        f"<blockquote><b>{title}</b></blockquote>\n\n"
+        f"🌐 <b>Platform:</b> <code>HentaiCity</code>\n\n"
+        f"<i>\"Anime style, infinite emotions.\"</i>"
+    )
     try:
         if thumb and thumb.startswith("http"):
             bot.send_photo(msg.chat.id, thumb, caption=caption, parse_mode="HTML",
@@ -593,13 +566,13 @@ def _handle_hcity(msg, url, uid, lang):
 
 
 def _handle_terabox(msg, url, uid, lang):
-    thinking = bot.reply_to(msg, "⏳ <b>Fetching Terabox...</b>", parse_mode="HTML")
+    thinking = bot.reply_to(msg, "<blockquote>⏳ <b>Fetching Terabox Files...</b></blockquote>", parse_mode="HTML")
     data = dl_fetch_terabox(url)
     _safe_delete(msg.chat.id, thinking.message_id)
     if not data.get("success"):
-        bot.reply_to(msg, f"Terabox: {data.get('error','unknown')}"); return
+        bot.reply_to(msg, f"<blockquote><b>Terabox Error:</b> {data.get('error','unknown')}</blockquote>", parse_mode="HTML"); return
     files = data.get("list",[])
-    if not files: bot.reply_to(msg,"No files found."); return
+    if not files: bot.reply_to(msg,"<blockquote><b>No files found in Terabox link.</b></blockquote>", parse_mode="HTML"); return
     sync_increment_count(uid, f"dl_{_day_key()}")
     for f in files[:5]:
         name    = f.get("name","File")
@@ -615,11 +588,17 @@ def _handle_terabox(msg, url, uid, lang):
             if raw:
                 try: size_str = f" · {int(raw)/(1024*1024):.1f} MB"
                 except Exception: size_str = f" · {raw}"
-        icon = "" if ftype=="video" else ("" if ftype=="audio" else "")
-        caption = f"{icon} <b>{name}</b>{size_str}\n Terabox"
+        
+        icon = "🎬" if ftype=="video" else ("🎵" if ftype=="audio" else "📁")
+        caption = (
+            f"<blockquote><b>{name}</b></blockquote>\n\n"
+            f"🌐 <b>Platform:</b> <code>Terabox</code>\n"
+            f"📦 <b>Size:</b> {size_str.lstrip(' · ')}\n\n"
+            f"<i>\"Sharing is caring, especially with Terabox!\"</i>"
+        )
         kb = InlineKeyboardMarkup()
-        if dl_url:  kb.row(InlineKeyboardButton(" Download", url=dl_url))
-        if zip_url: kb.row(InlineKeyboardButton(" Download ZIP", url=zip_url))
+        if dl_url:  kb.row(InlineKeyboardButton("📥 Download Now", url=dl_url))
+        if zip_url: kb.row(InlineKeyboardButton("🤐 Download ZIP", url=zip_url))
         try:
             if thumb and thumb.startswith("http"):
                 bot.send_photo(msg.chat.id, thumb, caption=caption, parse_mode="HTML",
@@ -627,8 +606,9 @@ def _handle_terabox(msg, url, uid, lang):
             else:
                 bot.reply_to(msg, caption, parse_mode="HTML", reply_markup=kb)
         except Exception:
-            bot.reply_to(msg, caption, reply_markup=kb)
+            bot.reply_to(msg, caption, parse_mode="HTML", reply_markup=kb)
     send_ad_to_user(msg.chat.id, uid)
+
 
 
 def _safe_delete(chat_id, msg_id):
@@ -1836,7 +1816,7 @@ def handle_text(msg):
 
     if not prompt: return
 
-    if is_dl_url(prompt) or is_terabox_url(prompt):
+    if is_any_url(prompt):
         url = extract_url(prompt)
         if url:
             handle_download(msg, url)
