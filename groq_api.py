@@ -1,16 +1,16 @@
 """
 ╔══════════════════════════╗
-                ᴛᴇᴀᴍᴅᴇᴠ × ɴᴇᴜʀᴀʟʜᴜʙ
+                Kizira
 ╚══════════════════════════╝
 
      @Groq—API—File
   
   Read @licence File  And @README.md
   
-  Dev: https://t.me/MR_ARMAN_08
-  Updates: https://t.me/TeamDevXBots
-  Support: https://t.me/Team_X_Og
-  Donate: https://pay.teamdev.sbs
+  Dev: https://t.me/xD3VS
+  Updates: https://t.me/BotXCore
+  Support: https://t.me/BotXCore
+  Donate: https://t.me/BotXCore
 """
 
 import time
@@ -77,7 +77,7 @@ def model_info():
 
 @app.get("/ping")
 def ping():
-    return {"status": "alive", "service": "AI_PROJECT - By @TEAM_X_OG", "time": int(time.time())}
+    return {"status": "alive", "service": "AI_PROJECT - By @BotXCore", "time": int(time.time())}
 
 
 # Self-ping to keep Railway service alive

@@ -11,13 +11,13 @@ btn:
   language:     "Language"
 
 welcome:
-  title:        "TEAMDEV x NEURALHUB"
+  title:        "Kizira"
   body: |
     Message karo  ->  AI turant reply karega
     /img <prompt>  ->  Image generate karo
     /dl <url>  ->  Media download karo
     /tb <url>  ->  Terabox files nikalo
-  footer:       "@TEAM_X_OG ke saath powered"
+  footer:       "@BotXCore ke saath powered"
 
 lang:
   header:       "LANGUAGE CHOOSE KARO"
@@ -62,7 +62,7 @@ sub:
       PM/month   : Unlimited
       Images/din : Unlimited
   current:      "Tera plan : {plan}"
-  upgrade_hint: "Upgrade ke liye @TEAM_X_OG ko contact karo yaar."
+  upgrade_hint: "Upgrade ke liye @BotXCore ko contact karo yaar."
 
 status:
   header:       "USAGE STATUS"

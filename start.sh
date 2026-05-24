@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# ───── TeamDev X NeuralHub ─────
+# ───── Kizira ─────
 set -e
 
 echo ""
 echo "╔═══════════════════╗"
-echo "         ᴛᴇᴀᴍᴅᴇᴠ × ɴᴇᴜʀᴀʟʜᴜʙ"
+echo "         Kizira"
 echo "╚═══════════════════╝"
 echo ""
 

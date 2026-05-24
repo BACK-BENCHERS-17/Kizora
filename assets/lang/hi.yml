@@ -11,13 +11,13 @@ btn:
   language:     "Bhasha"
 
 welcome:
-  title:        "TEAMDEV x NEURALHUB"
+  title:        "Kizira"
   body: |
     Message bhejo  ->  AI jawab dega
     /img <prompt>  ->  Image banao
     /dl <url>  ->  Media download karo
     /tb <url>  ->  Terabox files
-  footer:       "@TEAM_X_OG dwara sanchalit"
+  footer:       "@BotXCore dwara sanchalit"
 
 lang:
   header:       "BHASHA CHUNEN"
@@ -62,7 +62,7 @@ sub:
       PM/mahina  : Unlimited
       Images/din : Unlimited
   current:      "Tumhara plan : {plan}"
-  upgrade_hint: "Upgrade ke liye @TEAM_X_OG se contact karo."
+  upgrade_hint: "Upgrade ke liye @BotXCore se contact karo."
 
 status:
   header:       "USAGE STATUS"

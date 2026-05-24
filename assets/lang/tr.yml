@@ -11,13 +11,13 @@ btn:
   language:     "Dil"
 
 welcome:
-  title:        "TEAMDEV x NEURALHUB"
+  title:        "Kizira"
   body: |
     Mesaj gonder  ->  AI aninda yanit verir
     /img <istem>  ->  Gorsel olustur
     /dl <url>  ->  Medya indir
     /tb <url>  ->  Terabox dosyalari
-  footer:       "@TEAM_X_OG tarafindan desteklenmektedir"
+  footer:       "@BotXCore tarafindan desteklenmektedir"
 
 lang:
   header:       "DIL SECIN"
@@ -62,7 +62,7 @@ sub:
       PM/ay       : Sinirstiz
       Gorsel/gun  : Sinirstiz
   current:      "Planin : {plan}"
-  upgrade_hint: "Yukselmek icin @TEAM_X_OG ile iletisime gecin."
+  upgrade_hint: "Yukselmek icin @BotXCore ile iletisime gecin."
 
 status:
   header:       "KULLANIM DURUMU"

@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:39ff14,50:00e5ff,100:7b5ea7&height=220&section=header&text=TeamDev%20%C3%97%20NeuralHub&fontSize=62&fontFamily=Bebas+Neue&fontAlignY=38&desc=AI%20%C2%B7%20Downloader%20%C2%B7%20Multi-Language%20Telegram%20Bot&descAlignY=60&descSize=20&fontColor=ffffff&animation=fadeIn" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:39ff14,50:00e5ff,100:7b5ea7&height=220&section=header&text=Kizira&fontSize=62&fontFamily=Bebas+Neue&fontAlignY=38&desc=AI%20%C2%B7%20Downloader%20%C2%B7%20Multi-Language%20Telegram%20Bot&descAlignY=60&descSize=20&fontColor=ffffff&animation=fadeIn" width="100%"/>
 
 </div>
 
@@ -28,7 +28,7 @@
 
 ![Status](https://img.shields.io/badge/STATUS-ACTIVE-39ff14?style=for-the-badge&labelColor=0a0a0a)
 &nbsp;
-![License](https://img.shields.io/badge/LICENSE-TEAMDEV-ff2d6b?style=for-the-badge&labelColor=0a0a0a)
+![License](https://img.shields.io/badge/LICENSE-KIZIRA-ff2d6b?style=for-the-badge&labelColor=0a0a0a)
 &nbsp;
 ![Groq](https://img.shields.io/badge/AI-LLaMA_3.3_70B-00e5ff?style=for-the-badge&logo=meta&logoColor=0a0a0a&labelColor=0a0a0a)
 
@@ -39,8 +39,8 @@
 ## ◈ OVERVIEW
 
 ```python
-class TeamDevNeuralHub:
-    name        = "TeamDev × NeuralHub"
+class Kizira:
+    name        = "Kizira"
     version     = "2.0"
     platform    = "Telegram Bot"
     ai_engine   = "Groq — LLaMA 3.3 70B Versatile"
@@ -48,12 +48,12 @@ class TeamDevNeuralHub:
     database    = "MongoDB Atlas (Motor + PyMongo)"
     languages   = 20   # en, hi, hinglish, te, ta, ml, bn, ar, ru, ja, ko, zh ...
     plans       = ["Free", "Basic", "Pro", "Ultra", "Ultra Pro"]
-    dev         = "@MR_ARMAN_08"
-    team        = "@TEAM_X_OG"
-    support     = "https://t.me/Team_X_Og"
+    dev         = "@xD3VS"
+    team        = "@BotXCore"
+    support     = "https://t.me/BotXCore"
 ```
 
-> **TeamDev × NeuralHub** is a feature-packed Telegram bot combining an **AI girlfriend chatbot** (powered by Groq's LLaMA 3.3 70B), an **AI image generator**, a **multi-platform media downloader**, **Terabox support**, and a fully-featured **subscription & admin system** — all in 20+ languages.
+> **Kizira** is a feature-packed Telegram bot combining an **AI girlfriend chatbot** (powered by Groq's LLaMA 3.3 70B), an **AI image generator**, a **multi-platform media downloader**, **Terabox support**, and a fully-featured **subscription & admin system** — all in 20+ languages.
 
 ---
 
@@ -63,7 +63,7 @@ class TeamDevNeuralHub:
 
 ### ⚡ One-Click Railway Deploy
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template/new?template=https://github.com/justfortestingnothibghere/TeamDev-X-NearalHub)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template/new?template=https://github.com/justfortestingnothibghere/Kizira-X-NearalHub)
 
 > Installs all dependencies, starts `groq_api.py` + `c-gpt.py` (FastAPI on port 8000) + `bot.py` automatically via `start.sh`
 
@@ -161,7 +161,7 @@ class TeamDevNeuralHub:
 ## ◈ PROJECT STRUCTURE
 
 ```
-TeamDev-X-NeuralHub/
+Kizira-X-Kizira/
 │
 ├── bot.py              # Main bot — all handlers, download logic, admin panel
 ├── c-gpt.py            # FastAPI app — image generation & internal API
@@ -193,8 +193,8 @@ TeamDev-X-NeuralHub/
 ### 1. Clone the Repo
 
 ```bash
-git clone https://github.com/justfortestingnothibghere/TeamDev-X-NearalHub.git
-cd TeamDev-X-NearalHub
+git clone https://github.com/justfortestingnothibghere/Kizira-X-NearalHub.git
+cd Kizira-X-NearalHub
 ```
 
 ### 2. Install Dependencies
@@ -211,7 +211,7 @@ API_SECRET  = "YOUR_SECRET_KEY"                 # Internal API auth
 ADMIN_IDS   = [YOUR_TELEGRAM_USER_ID]           # Admin user IDs
 
 MONGO_URI   = "mongodb+srv://..."               # MongoDB Atlas URI
-MONGO_DB    = "teamdev_neuralhub"               # DB name
+MONGO_DB    = "kizira_db"               # DB name
 
 DL_API_BASE = "https://your-aio-api.railway.app" # AIO Downloader API URL
 DL_API_KEY  = "YOUR_AIO_API_KEY"               # AIO API key (if required)
@@ -236,8 +236,8 @@ chmod +x start.sh
 ## ◈ DOCKER DEPLOYMENT
 
 ```bash
-docker build -t teamdev-neuralhub .
-docker run -d --name neuralhub teamdev-neuralhub
+docker build -t kizira .
+docker run -d --name neuralhub kizira
 ```
 
 > The Dockerfile includes **Google Chrome** for SeleniumBase-based scraping endpoints.
@@ -299,17 +299,17 @@ Admins can manage users, assign plans, toggle features, broadcast messages, and 
 
 <div align="center">
 
-[![Telegram Dev](https://img.shields.io/badge/DEV-@MR__ARMAN__08-00e5ff?style=for-the-badge&logo=telegram&labelColor=0a0a0a)](https://t.me/MR_ARMAN_08)
+[![Telegram Dev](https://img.shields.io/badge/DEV-@MR__ARMAN__08-00e5ff?style=for-the-badge&logo=telegram&labelColor=0a0a0a)](https://t.me/xD3VS)
 &nbsp;
-[![Support Group](https://img.shields.io/badge/SUPPORT-@Team__X__Og-7b5ea7?style=for-the-badge&logo=telegram&labelColor=0a0a0a)](https://t.me/Team_X_Og)
+[![Support Group](https://img.shields.io/badge/SUPPORT-@Team__X__Og-7b5ea7?style=for-the-badge&logo=telegram&labelColor=0a0a0a)](https://t.me/BotXCore)
 &nbsp;
-[![Updates Channel](https://img.shields.io/badge/UPDATES-@TeamDevXBots-39ff14?style=for-the-badge&logo=telegram&labelColor=0a0a0a)](https://t.me/TeamDevXBots)
+[![Updates Channel](https://img.shields.io/badge/UPDATES-@BotXCore-39ff14?style=for-the-badge&logo=telegram&labelColor=0a0a0a)](https://t.me/BotXCore)
 
 <br/>
 
-[![Donate](https://img.shields.io/badge/DONATE-pay.teamdev.sbs-ffc233?style=for-the-badge&labelColor=0a0a0a)](https://pay.teamdev.sbs)
+[![Donate](https://img.shields.io/badge/DONATE-pay.teamdev.sbs-ffc233?style=for-the-badge&labelColor=0a0a0a)](https://t.me/BotXCore)
 &nbsp;
-[![Portfolio](https://img.shields.io/badge/PORTFOLIO-about.teamdev.sbs-ff2d6b?style=for-the-badge&labelColor=0a0a0a)](https://about.teamdev.sbs)
+[![Portfolio](https://img.shields.io/badge/PORTFOLIO-about.teamdev.sbs-ff2d6b?style=for-the-badge&labelColor=0a0a0a)](https://t.me/BotXCore)
 
 </div>
 
@@ -321,7 +321,7 @@ Admins can manage users, assign plans, toggle features, broadcast messages, and 
 
 <br/>
 
-> Built with ❤️ by **[@MR_ARMAN_08](https://t.me/MR_ARMAN_08)** · **TeamDev [@TEAM_X_OG](https://t.me/TEAM_X_OG)**
+> Built with ❤️ by **[@xD3VS](https://t.me/xD3VS)** · **Kizira [@BotXCore](https://t.me/TEAM_X_OG)**
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:7b5ea7,50:00e5ff,100:39ff14&height=120&section=footer&animation=fadeIn" width="100%"/>
 

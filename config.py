@@ -1,16 +1,16 @@
 """
 ╔══════════════════════════╗
-                ᴛᴇᴀᴍᴅᴇᴠ × ɴᴇᴜʀᴀʟʜᴜʙ
+                   ᴋɪᴢɪʀᴀ
 ╚══════════════════════════╝
 
      Config File
   
   Read @licence File  Adm @README.md
   
-  Dev: https://t.me/MR_ARMAN_08
-  Updates: https://t.me/TeamDevXBots
-  Support: https://t.me/Team_X_Og
-  Donate: https://pay.teamdev.sbs
+  Dev: https://t.me/xD3VS
+  Updates: https://t.me/BotXCore
+  Support: https://t.me/BotXCore
+  Donate: https://t.me/BotXCore
 """
 
 import requests
@@ -21,12 +21,12 @@ BATBIN_API_URL = "https://batbin.me/api/paste/{paste_id}"
 
 # Change Only Bot-Token, (Optinal  API_SECRET) ADMIN_IDS.
 BOT_TOKEN  = "8685695637:AAGBorrKEnfBAmM_JoiC-mqMpmgQ0slvs1o"
-API_SECRET = "TeamDev"
+API_SECRET = "Kizira"
 ADMIN_IDS  = [8163739723]
 
 # change It
 MONGO_URI = "mongodb+srv://bb:bb@cluster0.wzkrfkh.mongodb.net/appName=Cluster0"
-MONGO_DB  = "teamdev_neuralhub"
+MONGO_DB  = "kizira_db"
 
 # ───────────────── Internal service URLs Dont Change ─────────────────
 API_BASE      = "http://localhost:8000"

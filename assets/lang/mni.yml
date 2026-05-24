@@ -11,13 +11,13 @@ btn:
   language:     "লোন"
 
 welcome:
-  title:        "TEAMDEV x NEURALHUB"
+  title:        "Kizira"
   body: |
     মেসেজ থাদোকউ  ->  AI না উতথোকপিগনি
     /img <prompt>  ->  ফোতো থৌরাকউ
     /dl <url>  ->  মিদিয়া দাউনলোদ তৌবিয়ু
     /tb <url>  ->  Terabox ফাইলশিং
-  footer:       "@TEAM_X_OG না শক্তি পীরকপা"
+  footer:       "@BotXCore না শক্তি পীরকপা"
 
 lang:
   header:       "লোন সেলেক্ট তৌবিয়ু"
@@ -62,7 +62,7 @@ sub:
       PM/থা    : সীমা অকায়
       ফোতো/নুমিৎ : সীমা অকায়
   current:      "নংগী পান্থোকপা : {plan}"
-  upgrade_hint: "অপগ্রেদ তৌবিরে চৎলিবরা @TEAM_X_OG দা লৈবাক্তোন তৌবিয়ু।"
+  upgrade_hint: "অপগ্রেদ তৌবিরে চৎলিবরা @BotXCore দা লৈবাক্তোন তৌবিয়ু।"
 
 status:
   header:       "ব্যবহার স্তেতস"

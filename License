@@ -1,17 +1,17 @@
 ╔══════════════════════════════════════════════════════════════════╗
-                         T E A M D E V
+                         K I Z I R A
                    PROPRIETARY SOFTWARE LICENSE
 ╚══════════════════════════════════════════════════════════════════╝
 
-  Project   :  TeamDev × NeuralHub ── AI & Downloader Telegram Bot
+  Project   :  Kizira ── AI & Downloader Telegram Bot
   Version   :  2.0.0
-  Author    :  @MR_ARMAN_08
-  Website   :  https://TeamDev.sbs
-  Support   :  https://t.me/Team_X_Og
-  Updates   :  https://t.me/TeamDevXBots
-  Donate    :  https://Pay.TeamDev.sbs
+  Author    :  @xD3VS
+  Website   :  https://t.me/BotXCore
+  Support   :  https://t.me/BotXCore
+  Updates   :  https://t.me/BotXCore
+  Donate    :  https://t.me/BotXCore
 
-  Copyright (c) 2026 TeamDev. All rights reserved.
+  Copyright (c) 2026 Kizira. All rights reserved.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -21,12 +21,12 @@
   This software and all associated source code, documentation,
   assets, configuration files, templates, and intellectual property
   (collectively, the "Software") are the exclusive property of
-  TeamDev (@MR_ARMAN_08).
+  Kizira (@xD3VS).
 
   You are granted a LIMITED, NON-EXCLUSIVE, NON-TRANSFERABLE license
   to use this Software solely under the following conditions:
 
-    ◆  You have received this Software directly from TeamDev or an
+    ◆  You have received this Software directly from Kizira or an
        authorized distributor via official channels.
 
     ◆  You use this Software strictly for personal or internal
@@ -34,7 +34,7 @@
 
     ◆  You do not sublicense, resell, redistribute, or share access
        to this Software or any derivative of it without explicit
-       written consent from TeamDev.
+       written consent from Kizira.
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -43,7 +43,7 @@
   SECTION 2 ── RESTRICTIONS
 
   The following actions are STRICTLY PROHIBITED without prior written
-  permission from TeamDev:
+  permission from Kizira:
 
     ✗  Copying, cloning, or reproducing any part of the source code
        for use in another project, product, or service.
@@ -62,14 +62,14 @@
        license headers, author credits, or branding present in any
        file of this Software.
 
-    ✗  Using the TeamDev name, logo, brand identity, or associated
-       handles (@MR_ARMAN_08, @Team_X_Og, @TeamDevXBots) to imply
+    ✗  Using the Kizira name, logo, brand identity, or associated
+       handles (@xD3VS, @BotXCore, @BotXCore) to imply
        endorsement of any product or service not authorized by
-       TeamDev.
+       Kizira.
 
     ✗  Reselling or sublicensing access to this Software or any API,
        service, or product directly powered by it without a separate
-       commercial agreement with TeamDev.
+       commercial agreement with Kizira.
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -78,7 +78,7 @@
   SECTION 3 ── OWNERSHIP
 
   All title, ownership rights, and intellectual property rights in
-  and to the Software remain exclusively with TeamDev (@MR_ARMAN_08).
+  and to the Software remain exclusively with Kizira (@xD3VS).
 
   This license does not constitute a sale of the Software or any
   portion thereof. No ownership rights are transferred to you under
@@ -86,7 +86,7 @@
 
   Any modifications, improvements, patches, or derivative works you
   create based on this Software remain the intellectual property of
-  TeamDev unless a separate written agreement states otherwise.
+  Kizira unless a separate written agreement states otherwise.
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -99,7 +99,7 @@
   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
   NON-INFRINGEMENT.
 
-  TEAMDEV DOES NOT WARRANT THAT:
+  KIZIRA DOES NOT WARRANT THAT:
 
     ◆  The Software will operate uninterrupted or error-free.
     ◆  Third-party platforms (Telegram, Groq, MongoDB, Instagram,
@@ -119,7 +119,7 @@
 
   SECTION 5 ── LIMITATION OF LIABILITY
 
-  IN NO EVENT SHALL TEAMDEV OR @MR_ARMAN_08 BE LIABLE FOR ANY
+  IN NO EVENT SHALL KIZIRA OR @xD3VS BE LIABLE FOR ANY
   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
   ARISING FROM THE USE OR INABILITY TO USE THIS SOFTWARE, EVEN IF
   ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
@@ -146,7 +146,7 @@
     ◆  Delete all copies of the Software from your systems,
        servers, repositories, and any storage media.
 
-  TeamDev reserves the right to pursue legal remedies for any
+  Kizira reserves the right to pursue legal remedies for any
   violation of this license to the fullest extent permitted by law.
 
 
@@ -157,11 +157,11 @@
 
   To request permissions beyond the scope of this license, report
   violations, or inquire about commercial licensing arrangements,
-  contact TeamDev through official channels only:
+  contact Kizira through official channels only:
 
-    ◆  Telegram  :  https://t.me/Team_X_Og
-    ◆  Website   :  https://TeamDev.sbs
-    ◆  Developer :  @MR_ARMAN_08 (Telegram)
+    ◆  Telegram  :  https://t.me/BotXCore
+    ◆  Website   :  https://t.me/BotXCore
+    ◆  Developer :  @xD3VS (Telegram)
 
   Unauthorized use of this Software is a violation of copyright law
   and may result in civil and/or criminal penalties.
@@ -169,10 +169,10 @@
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  Copyright (c) 2026 TeamDev (@MR_ARMAN_08) ── All rights reserved.
+  Copyright (c) 2026 Kizira (@xD3VS) ── All rights reserved.
 
               AI  •  POWERFUL  •  ALL-IN-ONE
 
 ╔══════════════════════════════════════════════════════════════════╗
-                   https://TeamDev.sbs
+                   https://t.me/BotXCore
 ╚══════════════════════════════════════════════════════════════════╝

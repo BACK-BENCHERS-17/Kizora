@@ -1,16 +1,16 @@
 """
 ╔══════════════════════════╗
-                ᴛᴇᴀᴍᴅᴇᴠ × ɴᴇᴜʀᴀʟʜᴜʙ
+                Kizira
 ╚══════════════════════════╝
 
      @Lang—File
   
   Read @licence File  And @README.md
   
-  Dev: https://t.me/MR_ARMAN_08
-  Updates: https://t.me/TeamDevXBots
-  Support: https://t.me/Team_X_Og
-  Donate: https://pay.teamdev.sbs
+  Dev: https://t.me/xD3VS
+  Updates: https://t.me/BotXCore
+  Support: https://t.me/BotXCore
+  Donate: https://t.me/BotXCore
 """
 
 import os

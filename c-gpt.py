@@ -1,16 +1,16 @@
 """
 ╔══════════════════════════╗
-                ᴛᴇᴀᴍᴅᴇᴠ × ɴᴇᴜʀᴀʟʜᴜʙ
+                   ᴋɪᴢɪʀᴀ
 ╚══════════════════════════╝
 
      @API—File
   
   Read @licence File  And @README.md
   
-  Dev: https://t.me/MR_ARMAN_08
-  Updates: https://t.me/TeamDevXBots
-  Support: https://t.me/Team_X_Og
-  Donate: https://pay.teamdev.sbs
+  Dev: https://t.me/xD3VS
+  Updates: https://t.me/BotXCore
+  Support: https://t.me/BotXCore
+  Donate: https://t.me/BotXCore
 """
 
 # Due To Slow Response From Chat-Got We Shifted This To Groq As Your Reading Those!
@@ -38,7 +38,7 @@ from models.db import (
 async def require_bot_secret(x_bot_secret: str = Header(default=None)):
     secret = await async_get_config("api_secret")
     if not x_bot_secret or x_bot_secret != secret:
-        raise HTTPException(status_code=403, detail="Access denied. This Endpoint Only Accessible Via TeamDev X NeuralHub Bot — @TeamDevXBots.")
+        raise HTTPException(status_code=403, detail="Access denied. This Endpoint Only Accessible Via Kizira Bot — @BotXCore.")
 
 _xvfb = None
 
@@ -230,12 +230,12 @@ async def lifespan(app: FastAPI):
     quit_driver()
     stop_xvfb()
 
-app = FastAPI(title="TeamDev X NeuralHub API", lifespan=lifespan)
+app = FastAPI(title="Kizira API", lifespan=lifespan)
 
 
 @app.get("/home")
 async def home():
-    return {"name": "TeamDev X NeuralHub API",
+    return {"name": "Kizira API",
             "routes": {"chat_fast": "/?g=prompt (Groq)", "chat_slow": "/?c=prompt (ChatGPT)", "image": "/?i=prompt"}}
 
 

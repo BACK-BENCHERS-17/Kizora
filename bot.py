@@ -1,16 +1,16 @@
 """
 ╔══════════════════════════╗
-                ᴛᴇᴀᴍᴅᴇᴠ × ɴᴇᴜʀᴀʟʜᴜʙ
+                   ᴋɪᴢɪʀᴀ
 ╚══════════════════════════╝
 
      @Main—File
   
   Read @licence File  Adm @README.md
   
-  Dev: https://t.me/MR_ARMAN_08
-  Updates: https://t.me/TeamDevXBots
-  Support: https://t.me/Team_X_Og
-  Donate: https://pay.teamdev.sbs
+  Dev: https://t.me/xD3VS
+  Updates: https://t.me/BotXCore
+  Support: https://t.me/BotXCore
+  Donate: https://t.me/BotXCore
 """
 
 import os
@@ -865,7 +865,7 @@ def _build_welcome(uid: int, name: str, lang: str) -> str:
     badge = PLAN_BADGE.get(plan, plan)
     return (
         "\n"
-        "  ᴛᴇᴀᴍᴅᴇᴠ × ɴᴇᴜʀᴀʟʜᴜʙ\n"
+        "         ᴋɪᴢɪʀᴀ\n"
         "\n\n"
         f" Welcome, <b>{name}</b>!\n"
         f"Plan  ›  <b>{badge}</b>\n\n"
@@ -873,7 +873,7 @@ def _build_welcome(uid: int, name: str, lang: str) -> str:
         "  /img &lt;prompt&gt;  →  Generate image\n"
         "  /dl &lt;url&gt;  →  Download media\n"
         "  /tb &lt;url&gt;  →  Terabox download\n\n"
-        "  <i>Powered by @TEAM_X_OG</i>"
+        "  <i>Powered by @BotXCore</i>"
     )
 
 @bot.message_handler(commands=["swv"])
@@ -960,7 +960,7 @@ def cmd_sub(msg):
     lang = ulang(uid)
     plan = sync_get_user(uid).get("plan","free")
     kb = InlineKeyboardMarkup()
-    kb.row(InlineKeyboardButton(" Upgrade Now", url="https://t.me/Team_X_Og"))
+    kb.row(InlineKeyboardButton(" Upgrade Now", url="https://t.me/BotXCore"))
     kb.row(InlineKeyboardButton("Back", callback_data="menu_back"))
     bot.reply_to(msg, _build_plans_text(plan), reply_markup=kb, parse_mode="HTML")
 
@@ -1002,7 +1002,7 @@ def _build_plans_text(current_plan: str) -> str:
         "    Images/day  ∞ Unlimited\n\n"
 
         "\n"
-        "Contact @TEAM_X_OG to upgrade."
+        "Contact @BotXCore to upgrade."
     )
 
 @bot.message_handler(commands=["status"])
@@ -1248,7 +1248,7 @@ def handle_callback(call):
         answer()
         plan = sync_get_user(uid).get("plan","free")
         kb = InlineKeyboardMarkup()
-        kb.row(InlineKeyboardButton(t("btn.upgrade", lang), url="https://t.me/Team_X_Og"))
+        kb.row(InlineKeyboardButton(t("btn.upgrade", lang), url="https://t.me/BotXCore"))
         kb.row(InlineKeyboardButton(t("btn.back",    lang), callback_data="menu_back"))
         edit(_build_plans_text(plan), kb)
 
@@ -1607,7 +1607,7 @@ def handle_text(msg):
         bot.reply_to(msg,
             "<b>Access Denied</b>\n\n"
             "You have been banned from using this bot.\n"
-            "Contact @TEAM_X_OG if you think this is a mistake.",
+            "Contact @BotXCore if you think this is a mistake.",
             parse_mode="HTML"); return
 
     restricted = sync_is_restricted(uid)
@@ -1825,7 +1825,7 @@ def handle_text(msg):
     if restricted:
         bot.reply_to(msg,
             "<b>Restricted</b>\n\n"
-            "Your AI access is restricted. Contact @TEAM_X_OG.",
+            "Your AI access is restricted. Contact @BotXCore.",
             parse_mode="HTML"); return
 
     ai_model = "fast"
@@ -1875,7 +1875,7 @@ def handle_text(msg):
 if __name__ == "__main__":
     sync_ensure_config()
     print("")
-    print("        ᴛᴇᴀᴍᴅᴇᴠ × ɴᴇᴜʀᴀʟʜᴜʙ")
+    print("                   ᴋɪᴢɪʀᴀ")
     print("")
     print("[+] Bot running...")
     bot.infinity_polling(timeout=60, long_polling_timeout=30)

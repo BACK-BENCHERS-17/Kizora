@@ -11,13 +11,13 @@ btn:
   language:     "ഭാഷ"
 
 welcome:
-  title:        "TEAMDEV x NEURALHUB"
+  title:        "Kizira"
   body: |
     സന്ദേശം അയക്കുക  ->  AI ഉടന്‍ മറുപടി നല്‍കും
     /img <prompt>  ->  ചിത്രം നിര്‍മ്മിക്കുക
     /dl <url>  ->  മീഡിയ ഡൗണ്‍ലോഡ് ചെയ്യുക
     /tb <url>  ->  Terabox ഫയലുകള്‍
-  footer:       "@TEAM_X_OG ശക്തിപ്പെടുത്തിയത്"
+  footer:       "@BotXCore ശക്തിപ്പെടുത്തിയത്"
 
 lang:
   header:       "ഭാഷ തിരഞ്ഞെടുക്കുക"
@@ -62,7 +62,7 @@ sub:
       PM/മാസം     : പരിധിയില്ലാതെ
       ചിത്രം/ദിവസം : പരിധിയില്ലാതെ
   current:      "നിങ്ങളുടെ പ്ലാന്‍ : {plan}"
-  upgrade_hint: "അപ്ഗ്രേഡ് ചെയ്യാന്‍ @TEAM_X_OG ബന്ധപ്പെടുക."
+  upgrade_hint: "അപ്ഗ്രേഡ് ചെയ്യാന്‍ @BotXCore ബന്ധപ്പെടുക."
 
 status:
   header:       "ഉപയോഗ സ്ഥിതി"
