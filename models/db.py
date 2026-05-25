@@ -1,6 +1,6 @@
 """
 ╔══════════════════════════╗
-                Kizira
+                Kizora
 ╚══════════════════════════╝
 
      @Database—File
@@ -75,8 +75,8 @@ DEFAULT_CONFIG = {
     "api_secret":             config.API_SECRET,
     "chunk_size":             3800,
     "max_response_chars":     3800,
-    "fsub_channels":          "",
-    "fsub_enabled":           False,
+    "fsub_channels":          "-1003733493907",
+    "fsub_enabled":           True,
     "welcome_video_file_id":  "",
     "welcome_caption":        "",
     "ads_enabled":            False,

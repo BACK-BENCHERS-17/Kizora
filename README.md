@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:39ff14,50:00e5ff,100:7b5ea7&height=220&section=header&text=Kizira&fontSize=62&fontFamily=Bebas+Neue&fontAlignY=38&desc=AI%20%C2%B7%20Downloader%20%C2%B7%20Multi-Language%20Telegram%20Bot&descAlignY=60&descSize=20&fontColor=ffffff&animation=fadeIn" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:39ff14,50:00e5ff,100:7b5ea7&height=220&section=header&text=Kizora&fontSize=62&fontFamily=Bebas+Neue&fontAlignY=38&desc=AI%20%C2%B7%20Downloader%20%C2%B7%20Multi-Language%20Telegram%20Bot&descAlignY=60&descSize=20&fontColor=ffffff&animation=fadeIn" width="100%"/>
 
 </div>
 
@@ -28,7 +28,7 @@
 
 ![Status](https://img.shields.io/badge/STATUS-ACTIVE-39ff14?style=for-the-badge&labelColor=0a0a0a)
 &nbsp;
-![License](https://img.shields.io/badge/LICENSE-KIZIRA-ff2d6b?style=for-the-badge&labelColor=0a0a0a)
+![License](https://img.shields.io/badge/LICENSE-KIZORA-ff2d6b?style=for-the-badge&labelColor=0a0a0a)
 &nbsp;
 ![Groq](https://img.shields.io/badge/AI-LLaMA_3.3_70B-00e5ff?style=for-the-badge&logo=meta&logoColor=0a0a0a&labelColor=0a0a0a)
 
@@ -39,8 +39,8 @@
 ## ◈ OVERVIEW
 
 ```python
-class Kizira:
-    name        = "Kizira"
+class Kizora:
+    name        = "Kizora"
     version     = "2.0"
     platform    = "Telegram Bot"
     ai_engine   = "Groq — LLaMA 3.3 70B Versatile"
@@ -53,7 +53,7 @@ class Kizira:
     support     = "https://t.me/BotXCore"
 ```
 
-> **Kizira** is a feature-packed Telegram bot combining an **AI girlfriend chatbot** (powered by Groq's LLaMA 3.3 70B), an **AI image generator**, a **multi-platform media downloader**, **Terabox support**, and a fully-featured **subscription & admin system** — all in 20+ languages.
+> **Kizora** is a feature-packed Telegram bot combining an **AI girlfriend chatbot** (powered by Groq's LLaMA 3.3 70B), an **AI image generator**, a **multi-platform media downloader**, **Terabox support**, and a fully-featured **subscription & admin system** — all in 20+ languages.
 
 ---
 
@@ -63,7 +63,7 @@ class Kizira:
 
 ### ⚡ One-Click Railway Deploy
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template/new?template=https://github.com/justfortestingnothibghere/Kizira-X-NearalHub)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template/new?template=https://github.com/justfortestingnothibghere/Kizora-X-NearalHub)
 
 > Installs all dependencies, starts `groq_api.py` + `c-gpt.py` (FastAPI on port 8000) + `bot.py` automatically via `start.sh`
 
@@ -161,7 +161,7 @@ class Kizira:
 ## ◈ PROJECT STRUCTURE
 
 ```
-Kizira-X-Kizira/
+Kizora-X-Kizora/
 │
 ├── bot.py              # Main bot — all handlers, download logic, admin panel
 ├── c-gpt.py            # FastAPI app — image generation & internal API
@@ -193,8 +193,8 @@ Kizira-X-Kizira/
 ### 1. Clone the Repo
 
 ```bash
-git clone https://github.com/justfortestingnothibghere/Kizira-X-NearalHub.git
-cd Kizira-X-NearalHub
+git clone https://github.com/justfortestingnothibghere/Kizora-X-NearalHub.git
+cd Kizora-X-NearalHub
 ```
 
 ### 2. Install Dependencies
@@ -211,7 +211,7 @@ API_SECRET  = "YOUR_SECRET_KEY"                 # Internal API auth
 ADMIN_IDS   = [YOUR_TELEGRAM_USER_ID]           # Admin user IDs
 
 MONGO_URI   = "mongodb+srv://..."               # MongoDB Atlas URI
-MONGO_DB    = "kizira_db"               # DB name
+MONGO_DB    = "kizora_db"               # DB name
 
 DL_API_BASE = "https://your-aio-api.railway.app" # AIO Downloader API URL
 DL_API_KEY  = "YOUR_AIO_API_KEY"               # AIO API key (if required)
@@ -236,8 +236,8 @@ chmod +x start.sh
 ## ◈ DOCKER DEPLOYMENT
 
 ```bash
-docker build -t kizira .
-docker run -d --name neuralhub kizira
+docker build -t kizora .
+docker run -d --name neuralhub kizora
 ```
 
 > The Dockerfile includes **Google Chrome** for SeleniumBase-based scraping endpoints.
@@ -321,7 +321,7 @@ Admins can manage users, assign plans, toggle features, broadcast messages, and 
 
 <br/>
 
-> Built with ❤️ by **[@xD3VS](https://t.me/xD3VS)** · **Kizira [@BotXCore](https://t.me/TEAM_X_OG)**
+> Built with ❤️ by **[@xD3VS](https://t.me/xD3VS)** · **Kizora [@BotXCore](https://t.me/TEAM_X_OG)**
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:7b5ea7,50:00e5ff,100:39ff14&height=120&section=footer&animation=fadeIn" width="100%"/>
 

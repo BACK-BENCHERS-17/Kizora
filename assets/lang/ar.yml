@@ -11,7 +11,7 @@ btn:
   language:     "اللغة"
 
 welcome:
-  title:        "Kizira"
+  title:        "Kizora"
   body: |
     ارسل رسالة  ->  الذكاء الاصطناعي يرد فورا
     /img <نص>  ->  توليد صورة

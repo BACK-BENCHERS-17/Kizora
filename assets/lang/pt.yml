@@ -11,7 +11,7 @@ btn:
   language:     "Idioma"
 
 welcome:
-  title:        "Kizira"
+  title:        "Kizora"
   body: |
     Envie uma mensagem  ->  IA responde instantaneamente
     /img <texto>  ->  Gerar imagem

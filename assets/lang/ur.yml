@@ -11,7 +11,7 @@ btn:
   language:     "زبان"
 
 welcome:
-  title:        "Kizira"
+  title:        "Kizora"
   body: |
     پیغام بھیجیں  ->  AI فوری جواب دے گا
     /img <prompt>  ->  تصویر بنائیں

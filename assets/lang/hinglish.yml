@@ -11,7 +11,7 @@ btn:
   language:     "Language"
 
 welcome:
-  title:        "Kizira"
+  title:        "Kizora"
   body: |
     Message karo  ->  AI turant reply karega
     /img <prompt>  ->  Image generate karo

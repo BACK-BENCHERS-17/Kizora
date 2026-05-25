@@ -11,7 +11,7 @@ btn:
   language:     "భాష"
 
 welcome:
-  title:        "Kizira"
+  title:        "Kizora"
   body: |
     సందేశం పంపండి  ->  AI వెంటనే జవాబిస్తుంది
     /img <prompt>  ->  చిత్రాన్ని రూపొందించు

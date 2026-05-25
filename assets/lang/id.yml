@@ -11,7 +11,7 @@ btn:
   language:     "Bahasa"
 
 welcome:
-  title:        "Kizira"
+  title:        "Kizora"
   body: |
     Kirim pesan  ->  AI membalas seketika
     /img <teks>  ->  Buat gambar

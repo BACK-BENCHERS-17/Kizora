@@ -11,7 +11,7 @@ btn:
   language:     "ဘာသာစကား"
 
 welcome:
-  title:        "Kizira"
+  title:        "Kizora"
   body: |
     စာပို့ပါ  ->  AI ချက်ချင်းဖြေဆိုပါမည်
     /img <prompt>  ->  ပုံဖန်တီးပါ

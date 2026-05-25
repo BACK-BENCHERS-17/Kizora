@@ -11,7 +11,7 @@ btn:
   language:     "Bhasha"
 
 welcome:
-  title:        "Kizira"
+  title:        "Kizora"
   body: |
     Message bhejo  ->  AI jawab dega
     /img <prompt>  ->  Image banao

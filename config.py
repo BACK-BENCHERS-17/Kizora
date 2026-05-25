@@ -21,12 +21,12 @@ BATBIN_API_URL = "https://batbin.me/api/paste/{paste_id}"
 
 # Change Only Bot-Token, (Optinal  API_SECRET) ADMIN_IDS.
 BOT_TOKEN  = "8685695637:AAGBorrKEnfBAmM_JoiC-mqMpmgQ0slvs1o"
-API_SECRET = "Kizira"
-ADMIN_IDS  = [8163739723]
+API_SECRET = "Kizora"
+ADMIN_IDS  = [8063392786]
 
 # change It
 MONGO_URI = "mongodb+srv://bb:bb@cluster0.wzkrfkh.mongodb.net/appName=Cluster0"
-MONGO_DB  = "kizira_db"
+MONGO_DB  = "kizora_db"
 
 # ───────────────── Internal service URLs Dont Change ─────────────────
 API_BASE      = "http://localhost:8000"

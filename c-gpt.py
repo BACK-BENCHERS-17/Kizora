@@ -38,7 +38,7 @@ from models.db import (
 async def require_bot_secret(x_bot_secret: str = Header(default=None)):
     secret = await async_get_config("api_secret")
     if not x_bot_secret or x_bot_secret != secret:
-        raise HTTPException(status_code=403, detail="Access denied. This Endpoint Only Accessible Via Kizira Bot — @BotXCore.")
+        raise HTTPException(status_code=403, detail="Access denied. This Endpoint Only Accessible Via Kizora Bot — @BotXCore.")
 
 _xvfb = None
 
@@ -230,12 +230,12 @@ async def lifespan(app: FastAPI):
     quit_driver()
     stop_xvfb()
 
-app = FastAPI(title="Kizira API", lifespan=lifespan)
+app = FastAPI(title="Kizora API", lifespan=lifespan)
 
 
 @app.get("/home")
 async def home():
-    return {"name": "Kizira API",
+    return {"name": "Kizora API",
             "routes": {"chat_fast": "/?g=prompt (Groq)", "chat_slow": "/?c=prompt (ChatGPT)", "image": "/?i=prompt"}}
 
 

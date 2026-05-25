@@ -11,7 +11,7 @@ btn:
   language:     "Dil"
 
 welcome:
-  title:        "Kizira"
+  title:        "Kizora"
   body: |
     Mesaj gonder  ->  AI aninda yanit verir
     /img <istem>  ->  Gorsel olustur

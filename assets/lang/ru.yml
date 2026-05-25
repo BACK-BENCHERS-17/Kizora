@@ -11,7 +11,7 @@ btn:
   language:     "Язык"
 
 welcome:
-  title:        "Kizira"
+  title:        "Kizora"
   body: |
     Отправь сообщение  ->  ИИ ответит мгновенно
     /img <запрос>  ->  Сгенерировать изображение

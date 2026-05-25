@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# ───── Kizira ─────
+# ───── Kizora ─────
 set -e
 
 echo ""
 echo "╔═══════════════════╗"
-echo "         Kizira"
+echo "         Kizora"
 echo "╚═══════════════════╝"
 echo ""
 

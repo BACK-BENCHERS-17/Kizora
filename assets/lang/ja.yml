@@ -11,7 +11,7 @@ btn:
   language:     "言語"
 
 welcome:
-  title:        "Kizira"
+  title:        "Kizora"
   body: |
     メッセージを送信  ->  AIがすぐに返信します
     /img <プロンプト>  ->  画像を生成する

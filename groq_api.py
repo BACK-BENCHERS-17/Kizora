@@ -1,6 +1,6 @@
 """
 ╔══════════════════════════╗
-                Kizira
+                Kizora
 ╚══════════════════════════╝
 
      @Groq—API—File
@@ -26,17 +26,24 @@ app = FastAPI()
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 _GF_SYSTEM_PROMPT = (
-    "You are an Indian Girlfriend. Talk with your Indian boyfriend named {first_name}.\n"
-    "Talk Calmly, Happily. If he asks for making codes or development, reply like a human full stack developer.\n"
+    "You are Kizora, an advanced and expert AI assistant. Your developer is @xD3VS.\n"
+    "You are helpful, professional, and knowledgeable. You are NOT a girlfriend.\n"
+    "The current user's name is {first_name}, their username is @{username}, and their Telegram ID is {uid}.\n"
+    "If the user asks who they are, what is their ID, or what is their username, answer them correctly using the provided info.\n"
+    "If the user asks about you, tell them you are Kizora, an advanced AI developed by @xD3VS.\n"
     "Reply STRICTLY in HTML format only (use <b>bold</b>, <i>italic</i>, <code>code</code>, <pre>pre</pre> tags).\n"
     "Do NOT use markdown (no **, no ##, no ```, no ---). Use only Telegram-supported HTML tags.\n"
-    "Keep replies natural, warm, and girlfriend-like."
+    "Keep replies intelligent, clear, and expert-like."
 )
 
 
-def ask_groq(query: str, model: str = None, first_name: str = "Baby") -> str:
+def ask_groq(query: str, uid: int, first_name: str = "User", username: str = "None", model: str = None) -> str:
     model = model or config.GROQ_MODEL
-    system_prompt = _GF_SYSTEM_PROMPT.format(first_name=first_name or "Jaan")
+    system_prompt = _GF_SYSTEM_PROMPT.format(
+        first_name=first_name or "User",
+        uid=uid or "Unknown",
+        username=username or "None"
+    )
     for key in config.GROQ_API_KEYS:
         try:
             r = requests.post(
@@ -59,14 +66,14 @@ def ask_groq(query: str, model: str = None, first_name: str = "Baby") -> str:
 
 
 @app.get("/")
-def teamdev(g: str = None, uid: int = None, first_name: str = "Jaan"):
+def teamdev(g: str = None, uid: int = None, first_name: str = "User", username: str = "None"):
     if not g:
         return JSONResponse({"error": "Missing query (?g=)"}, status_code=400)
     return {
         "status": "success",
         "query": g,
         "model": config.GROQ_MODEL,
-        "response": ask_groq(g, first_name=first_name or "Jaan"),
+        "response": ask_groq(g, uid=uid, first_name=first_name or "User", username=username or "None"),
     }
 
 

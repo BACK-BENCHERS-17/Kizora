@@ -11,7 +11,7 @@ btn:
   language:     "Language"
 
 welcome:
-  title:        "Kizira"
+  title:        "Kizora"
   body: |
     Message  ->  AI replies instantly
     /img <prompt>  ->  Generate image

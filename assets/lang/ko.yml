@@ -11,7 +11,7 @@ btn:
   language:     "언어"
 
 welcome:
-  title:        "Kizira"
+  title:        "Kizora"
   body: |
     메시지 전송  ->  AI가 즉시 답장합니다
     /img <프롬프트>  ->  이미지 생성
