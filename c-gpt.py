@@ -239,6 +239,11 @@ async def home():
             "routes": {"chat_fast": "/?g=prompt (Groq)", "chat_slow": "/?c=prompt (ChatGPT)", "image": "/?i=prompt"}}
 
 
+@app.get("/ping")
+async def ping():
+    return {"status": "alive", "time": int(time.time())}
+
+
 @app.get("/", dependencies=[Depends(require_bot_secret)])
 async def main(i: str = None, c: str = None, g: str = None, uid: int = None, first_name: str = "Jaan", username: str = "None", history: str = None):
     if not uid:

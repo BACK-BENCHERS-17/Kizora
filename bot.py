@@ -281,7 +281,10 @@ def _aio_params(extra: dict = None) -> dict:
         p.update(extra)
     return p
 
-def dl_fetch(url: str)       -> dict: return _dl_get("/api/v1/dl",    {"url": url})
+def dl_fetch(url: str) -> dict:
+    print(f"[dl] Fetching URL: {url}")
+    return _dl_get("/api/v1/dl", {"url": url})
+
 def dl_fetch_terabox(url)    -> dict: return _dl_get("/api/v1/tb",    {"url": url})
 def dl_fetch_phub(url)       -> dict: return _dl_get("/api/v1/phub",  {"url": url})
 def dl_fetch_xham(url)       -> dict: return _dl_get("/api/v1/xham",  {"url": url})
@@ -428,9 +431,11 @@ def handle_download(msg, url: str):
 
     thinking = bot.reply_to(msg, "<blockquote>⏳ <b>Wait A Minute... We Are Finding Your Files!</b></blockquote>", parse_mode="HTML")
     data = dl_fetch(url)
+    print(f"[dl] API Data success: {data.get('success')}")
     _safe_delete(msg.chat.id, thinking.message_id)
 
     if not data.get("success"):
+        print(f"[dl] API Error: {data.get('error')}")
         kb = InlineKeyboardMarkup()
         kb.row(InlineKeyboardButton("🔗 Open Link", url=url))
         bot.reply_to(msg, 
@@ -441,6 +446,7 @@ def handle_download(msg, url: str):
         return
 
     medias   = data.get("medias", [])
+    print(f"[dl] Found {len(medias)} media entries")
     title    = (data.get("title") or "Media")[:60]
     platform = (data.get("source") or "").capitalize()
     thumb    = data.get("thumbnail","")
