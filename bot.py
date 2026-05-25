@@ -1106,11 +1106,12 @@ def cmd_img(msg):
         sync_set_last_msg(uid)
         if url.startswith("http"):
             kb = InlineKeyboardMarkup()
-            kb.row(InlineKeyboardButton(" Open Full Image", url=url))
+            kb.row(InlineKeyboardButton("🌐 Open in Mini Web", web_app=WebAppInfo(url=url)))
+            kb.row(InlineKeyboardButton("🔗 Direct Link", url=url))
             try:
                 bot.send_photo(msg.chat.id, url, reply_to_message_id=msg.message_id, reply_markup=kb)
             except Exception:
-                bot.reply_to(msg, f" <b>Image ready:</b>\n{url}", parse_mode="HTML", reply_markup=kb)
+                bot.reply_to(msg, f"<b>Image ready:</b>", parse_mode="HTML", reply_markup=kb)
         else:
             bot.reply_to(msg, t("ai.no_response",lang))
     else:
@@ -1189,6 +1190,15 @@ def cmd_admin(msg):
         parse_mode="HTML",
         reply_markup=admin_panel_markup()
     )
+
+@bot.message_handler(commands=["cancel"])
+def cmd_cancel(msg):
+    uid = msg.from_user.id
+    if uid in _pending:
+        _pending.pop(uid)
+        bot.reply_to(msg, "<b>Action cancelled.</b>", parse_mode="HTML")
+    else:
+        bot.reply_to(msg, "No active action to cancel.")
 
 @bot.callback_query_handler(func=lambda c: True)
 def handle_callback(call):
@@ -1638,6 +1648,9 @@ def handle_text(msg):
     is_pm  = msg.chat.type == "private"
     content_type = msg.content_type
     prompt = (msg.text or msg.caption or "").strip()
+
+    if prompt.startswith("/"):
+        return # Commands are handled by their own handlers
 
     if sync_is_banned(uid):
         bot.reply_to(msg,
