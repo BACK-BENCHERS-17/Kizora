@@ -1,6 +1,6 @@
 """
 ╔══════════════════════════╗
-                   ᴋɪᴢɪʀᴀ
+                   ᴋɪᴢᴏʀᴀ
 ╚══════════════════════════╝
 
      @Main—File
@@ -901,7 +901,7 @@ def _build_welcome(uid: int, name: str, lang: str) -> str:
     badge = PLAN_BADGE.get(plan, plan)
     return (
         "\n"
-        "         ᴋɪᴢɪʀᴀ\n"
+        "         ᴋɪᴢᴏʀᴀ\n"
         "\n\n"
         f" Welcome, <b>{name}</b>!\n"
         f"Plan  ›  <b>{badge}</b>\n\n"
@@ -1932,7 +1932,7 @@ def handle_text(msg):
 if __name__ == "__main__":
     sync_ensure_config()
     print("")
-    print("                   ᴋɪᴢɪʀᴀ")
+    print("                   ᴋɪᴢᴏʀᴀ")
     print("")
     print("[+] Bot running...")
     bot.infinity_polling(timeout=60, long_polling_timeout=30)
