@@ -495,7 +495,7 @@ def _handle_phub(msg, url, uid, lang):
     kb = InlineKeyboardMarkup()
     first_url = direct[0].get("url","")
     if first_url:
-        kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=first_url)))
+        kb.row(InlineKeyboardButton("📥 Download Now", web_app=WebAppInfo(url=first_url)))
     sync_increment_count(uid, f"dl_{_day_key()}")
     dur_str = ""
     try:
@@ -538,7 +538,7 @@ def _handle_xham(msg, url, uid, lang):
     if sorted_qs:
         best_url = streams[sorted_qs[0]]
         if best_url:
-            kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=best_url)))
+            kb.row(InlineKeyboardButton("📥 Download Now", web_app=WebAppInfo(url=best_url)))
     caption = (
         f"<blockquote><b>{title}</b></blockquote>\n\n"
         f"🌐 <b>Platform:</b> <code>XHamster</code>\n\n"
@@ -568,7 +568,7 @@ def _handle_hcity(msg, url, uid, lang):
     sync_increment_count(uid, f"dl_{_day_key()}")
     kb = InlineKeyboardMarkup()
     if m3u8:
-        kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=m3u8)))
+        kb.row(InlineKeyboardButton("🎬 Stream Now", web_app=WebAppInfo(url=m3u8)))
     if trailer:
         kb.row(InlineKeyboardButton("✨ Smart Trailer View", web_app=WebAppInfo(url=trailer)))
     caption = (
@@ -620,9 +620,9 @@ def _handle_terabox(msg, url, uid, lang):
         )
         kb = InlineKeyboardMarkup()
         if dl_url:
-            kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=dl_url)))
+            kb.row(InlineKeyboardButton("📥 Download Now", web_app=WebAppInfo(url=dl_url)))
         if zip_url:
-            kb.row(InlineKeyboardButton("📦 Smart ZIP View", web_app=WebAppInfo(url=zip_url)))
+            kb.row(InlineKeyboardButton("📦 View ZIP Files", web_app=WebAppInfo(url=zip_url)))
         try:
             if thumb and thumb.startswith("http"):
                 bot.send_photo(msg.chat.id, thumb, caption=caption, parse_mode="HTML",
@@ -1094,7 +1094,7 @@ def cmd_img(msg):
         sync_set_last_msg(uid)
         if url.startswith("http"):
             kb = InlineKeyboardMarkup()
-            kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=url)))
+            kb.row(InlineKeyboardButton("✨ View Image", web_app=WebAppInfo(url=url)))
             try:
                 bot.send_photo(msg.chat.id, url, reply_to_message_id=msg.message_id, reply_markup=kb)
             except Exception:
@@ -1921,7 +1921,7 @@ def handle_text(msg):
         if urls:
             kb = InlineKeyboardMarkup()
             for u in urls[:3]: # Limit to 3 buttons
-                kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=u)))
+                kb.row(InlineKeyboardButton("🔗 Open Link", web_app=WebAppInfo(url=u)))
 
         sync_set_last_msg(uid)
         mk = _month_key()
@@ -1944,3 +1944,4 @@ if __name__ == "__main__":
     print("")
     print("[+] Bot running...")
     bot.infinity_polling(timeout=60, long_polling_timeout=30, skip_pending=True)
+True)
