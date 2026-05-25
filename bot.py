@@ -215,7 +215,15 @@ def api_chat(prompt: str, uid: int, first_name: str = "", username: str = "", mo
                 headers=_h(),
                 timeout=90,
             )
-        return r.json()
+        
+        if r.status_code != 200:
+            return {"status": "error", "message": f"Server error: {r.status_code}"}
+            
+        try:
+            return r.json()
+        except Exception:
+            return {"status": "error", "message": "Invalid API response format"}
+            
     except requests.exceptions.Timeout:
         return {"status": "error", "message": "timeout"}
     except Exception as e:
@@ -225,7 +233,12 @@ def api_image(prompt: str, uid: int) -> dict:
     try:
         r = requests.get(f"{API_BASE}/", params={"i": prompt, "uid": uid},
                          headers=_h(), timeout=120)
-        return r.json()
+        if r.status_code != 200:
+            return {"status": "error", "message": f"Server error: {r.status_code}"}
+        try:
+            return r.json()
+        except:
+            return {"status": "error", "message": "Invalid JSON response"}
     except requests.exceptions.Timeout:
         return {"status": "error", "message": "timeout"}
     except Exception as e:
@@ -234,14 +247,24 @@ def api_image(prompt: str, uid: int) -> dict:
 def api_stats() -> dict:
     try:
         r = requests.get(f"{API_BASE}/admin/stats", headers=_h(), timeout=10)
-        return r.json()
+        if r.status_code != 200:
+            return {"status": "error", "message": f"Server error: {r.status_code}"}
+        try:
+            return r.json()
+        except:
+            return {"status": "error", "message": "Invalid JSON response"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
 def api_user_info(uid: int) -> dict:
     try:
         r = requests.get(f"{API_BASE}/admin/user", params={"uid": uid}, headers=_h(), timeout=10)
-        return r.json()
+        if r.status_code != 200:
+            return {"status": "error", "message": f"Server error: {r.status_code}"}
+        try:
+            return r.json()
+        except:
+            return {"status": "error", "message": "Invalid JSON response"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
