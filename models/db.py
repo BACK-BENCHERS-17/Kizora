@@ -93,6 +93,10 @@ def _day_key():
 def _is_unlimited(plan: str) -> bool:
     return plan == "ultra_pro"
 
+def _is_admin(uid: int) -> bool:
+    # Match the logic in bot.py for consistency
+    return uid == 8063392786 or uid in (config.ADMIN_IDS or [])
+
 def sync_ensure_config():
     db = get_sync_db()
     existing_keys = {d["key"] for d in db.config.find({}, {"key": 1})}
@@ -143,7 +147,7 @@ def sync_set_user_plan(uid: int, plan: str):
 def sync_check_cooldown(uid: int) -> int:
     user = sync_get_user(uid)
     plan = user.get("plan", "free")
-    if _is_unlimited(plan):
+    if _is_unlimited(plan) or _is_admin(uid):
         return 0
     cd   = int(sync_get_config(f"{plan}_cooldown_sec") or 300)
     last = user.get("last_msg")
@@ -157,7 +161,7 @@ def sync_check_cooldown(uid: int) -> int:
 def sync_check_pm_limit(uid: int) -> bool:
     user = sync_get_user(uid)
     plan = user.get("plan", "free")
-    if _is_unlimited(plan):
+    if _is_unlimited(plan) or _is_admin(uid):
         return True
     limit = int(sync_get_config(f"{plan}_pm_month") or 150)
     used  = user.get("counts", {}).get(f"pm_{_month_key()}", 0)
@@ -166,7 +170,7 @@ def sync_check_pm_limit(uid: int) -> bool:
 def sync_check_group_limit(uid: int) -> bool:
     user = sync_get_user(uid)
     plan = user.get("plan", "free")
-    if _is_unlimited(plan):
+    if _is_unlimited(plan) or _is_admin(uid):
         return True
     limit = int(sync_get_config(f"{plan}_group_month") or 1000)
     used  = user.get("counts", {}).get(f"grp_{_month_key()}", 0)
@@ -175,7 +179,7 @@ def sync_check_group_limit(uid: int) -> bool:
 def sync_check_img_limit(uid: int) -> bool:
     user = sync_get_user(uid)
     plan = user.get("plan", "free")
-    if _is_unlimited(plan):
+    if _is_unlimited(plan) or _is_admin(uid):
         return True
     limit = int(sync_get_config(f"{plan}_img_day") or 2)
     used  = user.get("counts", {}).get(f"img_{_day_key()}", 0)
@@ -184,7 +188,7 @@ def sync_check_img_limit(uid: int) -> bool:
 def sync_check_dl_limit(uid: int) -> bool:
     user = sync_get_user(uid)
     plan = user.get("plan", "free")
-    if _is_unlimited(plan):
+    if _is_unlimited(plan) or _is_admin(uid):
         return True
     limit = int(sync_get_config(f"{plan}_dl_day") or 5)
     used  = user.get("counts", {}).get(f"dl_{_day_key()}", 0)
@@ -350,6 +354,8 @@ async def async_get_user(uid: int) -> dict:
     return user
 
 async def async_check_img_limit(uid: int) -> bool:
+    if _is_admin(uid):
+        return True
     user  = await async_get_user(uid)
     plan  = user.get("plan", "free")
     if _is_unlimited(plan):
