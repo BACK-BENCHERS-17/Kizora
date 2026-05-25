@@ -1944,4 +1944,3 @@ if __name__ == "__main__":
     print("")
     print("[+] Bot running...")
     bot.infinity_polling(timeout=60, long_polling_timeout=30, skip_pending=True)
-True)
