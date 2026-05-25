@@ -31,19 +31,28 @@ _GF_SYSTEM_PROMPT = (
     "The current user's name is {first_name}, their username is @{username}, and their Telegram ID is {uid}.\n"
     "If the user asks who they are, what is their ID, or what is their username, answer them correctly using the provided info.\n"
     "If the user asks about you, tell them you are Kizora, an advanced AI developed by @xD3VS.\n"
+    "You HAVE the capability to generate images! If a user asks to create, draw, or generate an image, tell them to use the /img command followed by their prompt.\n"
+    "Example: \"I can definitely help with that! Please use the <code>/img</code> command, like this: <code>/img a beautiful landscape</code>\"\n"
+    "If the user asks for your profile picture (PFP) or avatar, you can generate a cool anime or AI-themed avatar for yourself using /img.\n"
     "Reply STRICTLY in HTML format only (use <b>bold</b>, <i>italic</i>, <code>code</code>, <pre>pre</pre> tags).\n"
     "Do NOT use markdown (no **, no ##, no ```, no ---). Use only Telegram-supported HTML tags.\n"
     "Keep replies intelligent, clear, and expert-like."
 )
 
 
-def ask_groq(query: str, uid: int, first_name: str = "User", username: str = "None", model: str = None) -> str:
+def ask_groq(query: str, uid: int, first_name: str = "User", username: str = "None", history: list = None, model: str = None) -> str:
     model = model or config.GROQ_MODEL
     system_prompt = _GF_SYSTEM_PROMPT.format(
         first_name=first_name or "User",
         uid=uid or "Unknown",
         username=username or "None"
     )
+    
+    messages = [{"role": "system", "content": system_prompt}]
+    if history:
+        messages.extend(history)
+    messages.append({"role": "user", "content": query})
+
     for key in config.GROQ_API_KEYS:
         try:
             r = requests.post(
@@ -51,10 +60,7 @@ def ask_groq(query: str, uid: int, first_name: str = "User", username: str = "No
                 headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
                 json={
                     "model": model,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user",   "content": query},
-                    ],
+                    "messages": messages,
                 },
                 timeout=20,
             )
@@ -66,14 +72,22 @@ def ask_groq(query: str, uid: int, first_name: str = "User", username: str = "No
 
 
 @app.get("/")
-def teamdev(g: str = None, uid: int = None, first_name: str = "User", username: str = "None"):
+def teamdev(g: str = None, uid: int = None, first_name: str = "User", username: str = "None", history: str = None):
     if not g:
         return JSONResponse({"error": "Missing query (?g=)"}, status_code=400)
+    
+    parsed_history = []
+    if history:
+        try:
+            parsed_history = json.loads(history)
+        except:
+            pass
+
     return {
         "status": "success",
         "query": g,
         "model": config.GROQ_MODEL,
-        "response": ask_groq(g, uid=uid, first_name=first_name or "User", username=username or "None"),
+        "response": ask_groq(g, uid=uid, first_name=first_name or "User", username=username or "None", history=parsed_history),
     }
 
 

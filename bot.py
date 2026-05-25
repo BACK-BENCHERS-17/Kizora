@@ -40,6 +40,7 @@ from models.db import (
     sync_ban_user, sync_unban_user, sync_restrict_user, sync_unrestrict_user,
     sync_is_banned, sync_is_restricted,
     sync_log_user_action, sync_get_user_history,
+    sync_get_chat_history, sync_add_chat_history,
     sync_get_fsub_channels, sync_add_fsub_channel, sync_remove_fsub_channel,
     sync_fsub_enabled, sync_set_fsub_enabled,
     sync_get_welcome_video, sync_set_welcome_video,
@@ -194,17 +195,21 @@ def fsub_markup(not_joined: list) -> InlineKeyboardMarkup:
     kb.row(InlineKeyboardButton("Verified", callback_data="fsub_verify"))
     return kb
 
-def api_chat(prompt: str, uid: int, first_name: str = "", username: str = "", model: str = "fast") -> dict:
+def api_chat(prompt: str, uid: int, first_name: str = "", username: str = "", history: list = None, model: str = "fast") -> dict:
     try:
         if model == "fast":
+            params = {
+                "g": prompt,
+                "uid": uid,
+                "first_name": first_name or "User",
+                "username": username or "None"
+            }
+            if history:
+                params["history"] = json.dumps(history)
+            
             r = requests.get(
                 f"{API_BASE}/",
-                params={
-                    "g": prompt,
-                    "uid": uid,
-                    "first_name": first_name or "User",
-                    "username": username or "None"
-                },
+                params=params,
                 headers=_h(),
                 timeout=30,
             )
@@ -1932,7 +1937,11 @@ def handle_text(msg):
 
     first_name = msg.from_user.first_name or "User"
     username   = msg.from_user.username or "None"
-    result     = api_chat(prompt, uid, first_name=first_name, username=username, model=ai_model)
+    
+    # Fetch chat history for context
+    history = sync_get_chat_history(uid)
+    
+    result     = api_chat(prompt, uid, first_name=first_name, username=username, history=history, model=ai_model)
 
     if ai_model == "fast" and "response" in result and "status" not in result:
         result = {"status": "success", "response": result["response"]}
@@ -1941,6 +1950,10 @@ def handle_text(msg):
         response = result.get("response","")
         if not response:
             bot.reply_to(msg, t("ai.no_response",lang)); return
+        
+        # Save exchange to chat history
+        sync_add_chat_history(uid, "user", prompt)
+        sync_add_chat_history(uid, "assistant", response)
         
         # Check for URLs in response and add Mini Web buttons
         kb = None

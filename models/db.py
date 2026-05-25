@@ -397,3 +397,23 @@ def sync_delete_ad(ad_id: str):
         get_sync_db().ads.delete_one({"_id": ObjectId(ad_id)})
     except Exception as e:
         print(f"[!] Ad delete error: {e}")
+
+def sync_get_chat_history(uid: int, limit: int = 10) -> list:
+    db = get_sync_db()
+    user = db.users.find_one({"uid": uid}, {"chat_history": 1})
+    return user.get("chat_history", []) if user else []
+
+def sync_add_chat_history(uid: int, role: str, content: str, limit: int = 10):
+    db = get_sync_db()
+    db.users.update_one(
+        {"uid": uid},
+        {
+            "$push": {
+                "chat_history": {
+                    "$each": [{"role": role, "content": content}],
+                    "$slice": -limit
+                }
+            }
+        },
+        upsert=True
+    )

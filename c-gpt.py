@@ -240,7 +240,7 @@ async def home():
 
 
 @app.get("/", dependencies=[Depends(require_bot_secret)])
-async def main(i: str = None, c: str = None, g: str = None, uid: int = None, first_name: str = "Jaan", username: str = "None"):
+async def main(i: str = None, c: str = None, g: str = None, uid: int = None, first_name: str = "Jaan", username: str = "None", history: str = None):
     if not uid:
         raise HTTPException(status_code=400, detail="uid required")
 
@@ -264,7 +264,13 @@ async def main(i: str = None, c: str = None, g: str = None, uid: int = None, fir
         }
 
     if g:
-        response = await asyncio.to_thread(ask_groq, g, uid=uid, first_name=first_name, username=username)
+        parsed_history = []
+        if history:
+            try:
+                parsed_history = json.loads(history)
+            except:
+                pass
+        response = await asyncio.to_thread(ask_groq, g, uid=uid, first_name=first_name, username=username, history=parsed_history)
         return {"status": "success", "response": response[:max_chars]}
 
     raise HTTPException(status_code=400, detail="Use ?c= or ?i= or ?g=")
