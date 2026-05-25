@@ -343,19 +343,8 @@ def _size_label(m: dict) -> str:
 def _dl_quality_markup(medias: list) -> InlineKeyboardMarkup:
     filtered = _filter_min_quality(medias)
     kb  = InlineKeyboardMarkup()
-    row = []
-    for m in filtered[:8]:
-        dl_url = m.get("url") or m.get("download_url","")
-        if not dl_url: continue
-        qual  = m.get("quality") or m.get("ext") or "?"
-        icon  = "" if m.get("ext") in AUDIO_EXTS else ""
-        label = f"{icon} {qual}{_size_label(m)}"
-        row.append(InlineKeyboardButton(label, url=dl_url))
-        if len(row) == 2:
-            kb.row(*row); row = []
-    if row: kb.row(*row)
     
-    # Add Mini Web button for the first media URL if any
+    # Add ✨ Smart View button for the best media URL
     if filtered:
         best = get_best_media(filtered)
         if best:
@@ -462,24 +451,6 @@ def handle_download(msg, url: str):
     filtered = _filter_min_quality(medias)
     
     kb = InlineKeyboardMarkup()
-    row = []
-    seen = set()
-    for m in filtered:
-        dl_url = m.get("url") or m.get("download_url","")
-        if not dl_url: continue
-        ext    = (m.get("ext") or "").lower()
-        height = m.get("height") or 0
-        if ext not in AUDIO_EXTS:
-            key = (height, ext)
-            if height and ext == "webm" and (height, "mp4") in seen: continue
-            seen.add(key)
-        qual  = m.get("quality") or m.get("label") or ext.upper()
-        icon  = "🎵" if ext in AUDIO_EXTS else "🎬"
-        label = f"{icon} {qual}{_size_label(m)}"
-        row.append(InlineKeyboardButton(label, url=dl_url))
-        if len(row) == 2: kb.row(*row); row = []
-    if row: kb.row(*row)
-
     if filtered:
         best = get_best_media(filtered)
         if best:
@@ -521,16 +492,8 @@ def _handle_phub(msg, url, uid, lang):
     direct  = [f for f in formats if not str(f.get("format_id","")).startswith("hls")]
     if not direct: direct = formats
     if not direct: bot.reply_to(msg,"<blockquote><b>No formats found.</b></blockquote>", parse_mode="HTML"); return
-    kb = InlineKeyboardMarkup(); row = []
-    first_url = ""
-    for f in direct:
-        furl = f.get("url","")
-        if not furl: continue
-        if not first_url: first_url = furl
-        label = "🎬 " + str(f.get("format_id") or str(f.get("height","")) + "p")
-        row.append(InlineKeyboardButton(label, url=furl))
-        if len(row)==2: kb.row(*row); row=[]
-    if row: kb.row(*row)
+    kb = InlineKeyboardMarkup()
+    first_url = direct[0].get("url","")
     if first_url:
         kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=first_url)))
     sync_increment_count(uid, f"dl_{_day_key()}")
@@ -570,17 +533,12 @@ def _handle_xham(msg, url, uid, lang):
     def _hh(k):
         try: return int(k.replace("p",""))
         except: return 0
-    kb = InlineKeyboardMarkup(); row = []
-    first_url = ""
-    for q in sorted(streams.keys(), key=_hh):
-        surl = streams[q]
-        if not surl: continue
-        if not first_url: first_url = surl
-        row.append(InlineKeyboardButton("🎬 " + q, url=surl))
-        if len(row)==2: kb.row(*row); row=[]
-    if row: kb.row(*row)
-    if first_url:
-        kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=first_url)))
+    kb = InlineKeyboardMarkup()
+    sorted_qs = sorted(streams.keys(), key=_hh, reverse=True)
+    if sorted_qs:
+        best_url = streams[sorted_qs[0]]
+        if best_url:
+            kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=best_url)))
     caption = (
         f"<blockquote><b>{title}</b></blockquote>\n\n"
         f"🌐 <b>Platform:</b> <code>XHamster</code>\n\n"
@@ -610,10 +568,8 @@ def _handle_hcity(msg, url, uid, lang):
     sync_increment_count(uid, f"dl_{_day_key()}")
     kb = InlineKeyboardMarkup()
     if m3u8:
-        kb.row(InlineKeyboardButton("🎬 Stream (M3U8)", url=m3u8))
         kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=m3u8)))
     if trailer:
-        kb.row(InlineKeyboardButton("📽 Trailer", url=trailer))
         kb.row(InlineKeyboardButton("✨ Smart Trailer View", web_app=WebAppInfo(url=trailer)))
     caption = (
         f"<blockquote><b>{title}</b></blockquote>\n\n"
@@ -664,10 +620,8 @@ def _handle_terabox(msg, url, uid, lang):
         )
         kb = InlineKeyboardMarkup()
         if dl_url:
-            kb.row(InlineKeyboardButton("📥 Download Now", url=dl_url))
             kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=dl_url)))
         if zip_url:
-            kb.row(InlineKeyboardButton("🤐 Download ZIP", url=zip_url))
             kb.row(InlineKeyboardButton("📦 Smart ZIP View", web_app=WebAppInfo(url=zip_url)))
         try:
             if thumb and thumb.startswith("http"):
