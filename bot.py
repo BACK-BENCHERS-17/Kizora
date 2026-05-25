@@ -353,7 +353,7 @@ def _dl_quality_markup(medias: list) -> InlineKeyboardMarkup:
         if best:
             url = best.get("url") or best.get("download_url")
             if url:
-                kb.row(InlineKeyboardButton("🌐 Open in Mini Web", web_app=WebAppInfo(url=url)))
+                kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=url)))
     return kb
 
 def send_ad_to_user(chat_id: int, uid: int):
@@ -474,7 +474,7 @@ def handle_download(msg, url: str):
         if best:
             url = best.get("url") or best.get("download_url")
             if url:
-                kb.row(InlineKeyboardButton("🌐 Open in Mini Web", web_app=WebAppInfo(url=url)))
+                kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=url)))
 
     caption = (
         f"<blockquote><b>{title}</b></blockquote>\n\n"
@@ -521,7 +521,7 @@ def _handle_phub(msg, url, uid, lang):
         if len(row)==2: kb.row(*row); row=[]
     if row: kb.row(*row)
     if first_url:
-        kb.row(InlineKeyboardButton("🌐 Open in Mini Web", web_app=WebAppInfo(url=first_url)))
+        kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=first_url)))
     sync_increment_count(uid, f"dl_{_day_key()}")
     dur_str = ""
     try:
@@ -569,7 +569,7 @@ def _handle_xham(msg, url, uid, lang):
         if len(row)==2: kb.row(*row); row=[]
     if row: kb.row(*row)
     if first_url:
-        kb.row(InlineKeyboardButton("🌐 Open in Mini Web", web_app=WebAppInfo(url=first_url)))
+        kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=first_url)))
     caption = (
         f"<blockquote><b>{title}</b></blockquote>\n\n"
         f"🌐 <b>Platform:</b> <code>XHamster</code>\n\n"
@@ -600,10 +600,10 @@ def _handle_hcity(msg, url, uid, lang):
     kb = InlineKeyboardMarkup()
     if m3u8:
         kb.row(InlineKeyboardButton("🎬 Stream (M3U8)", url=m3u8))
-        kb.row(InlineKeyboardButton("🌐 Open in Mini Web", web_app=WebAppInfo(url=m3u8)))
+        kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=m3u8)))
     if trailer:
         kb.row(InlineKeyboardButton("📽 Trailer", url=trailer))
-        kb.row(InlineKeyboardButton("🌐 Trailer in Mini Web", web_app=WebAppInfo(url=trailer)))
+        kb.row(InlineKeyboardButton("✨ Smart Trailer View", web_app=WebAppInfo(url=trailer)))
     caption = (
         f"<blockquote><b>{title}</b></blockquote>\n\n"
         f"🌐 <b>Platform:</b> <code>HentaiCity</code>\n\n"
@@ -654,10 +654,10 @@ def _handle_terabox(msg, url, uid, lang):
         kb = InlineKeyboardMarkup()
         if dl_url:
             kb.row(InlineKeyboardButton("📥 Download Now", url=dl_url))
-            kb.row(InlineKeyboardButton("🌐 Open in Mini Web", web_app=WebAppInfo(url=dl_url)))
+            kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=dl_url)))
         if zip_url:
             kb.row(InlineKeyboardButton("🤐 Download ZIP", url=zip_url))
-            kb.row(InlineKeyboardButton("🌐 ZIP in Mini Web", web_app=WebAppInfo(url=zip_url)))
+            kb.row(InlineKeyboardButton("📦 Smart ZIP View", web_app=WebAppInfo(url=zip_url)))
         try:
             if thumb and thumb.startswith("http"):
                 bot.send_photo(msg.chat.id, thumb, caption=caption, parse_mode="HTML",
@@ -1129,8 +1129,7 @@ def cmd_img(msg):
         sync_set_last_msg(uid)
         if url.startswith("http"):
             kb = InlineKeyboardMarkup()
-            kb.row(InlineKeyboardButton("🌐 Open in Mini Web", web_app=WebAppInfo(url=url)))
-            kb.row(InlineKeyboardButton("🔗 Direct Link", url=url))
+            kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=url)))
             try:
                 bot.send_photo(msg.chat.id, url, reply_to_message_id=msg.message_id, reply_markup=kb)
             except Exception:
@@ -1949,7 +1948,7 @@ def handle_text(msg):
         if urls:
             kb = InlineKeyboardMarkup()
             for u in urls[:3]: # Limit to 3 buttons
-                kb.row(InlineKeyboardButton(f"🌐 Open in Mini Web", web_app=WebAppInfo(url=u)))
+                kb.row(InlineKeyboardButton("✨ Smart View", web_app=WebAppInfo(url=u)))
 
         sync_set_last_msg(uid)
         mk = _month_key()
