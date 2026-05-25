@@ -8,9 +8,11 @@ echo "         Kizora"
 echo "╚═══════════════════╝"
 echo ""
 
-python3 groq_api.py &
-GROQ_PID=$!
+# Kill existing processes to avoid 409 Conflict
+pkill -f "python3 bot.py" || true
+pkill -f "uvicorn c-gpt:app" || true
 
+# Start API server (groq_api is imported within c-gpt)
 python3 -m uvicorn c-gpt:app --host 0.0.0.0 --port 8000 &
 API_PID=$!
 
@@ -24,6 +26,5 @@ for i in $(seq 1 30); do
 done
 
 echo "[+] Starting bot..."
-python3 bot.py
-
-kill $API_PID $GROQ_PID 2>/dev/null
+# Use exec to replace the shell process with the bot process
+exec python3 bot.py
