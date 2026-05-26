@@ -144,6 +144,20 @@ def sync_set_last_msg(uid: int):
 def sync_set_user_plan(uid: int, plan: str):
     sync_update_user(uid, {"plan": plan})
 
+def sync_get_user_persona(uid: int) -> str:
+    user = sync_get_user(uid)
+    return user.get("persona", "default")
+
+def sync_set_user_persona(uid: int, persona: str):
+    sync_update_user(uid, {"persona": persona})
+
+def sync_get_game_state(uid: int) -> dict:
+    user = sync_get_user(uid)
+    return user.get("game_state", {})
+
+def sync_set_game_state(uid: int, state: dict):
+    sync_update_user(uid, {"game_state": state})
+
 def sync_check_cooldown(uid: int) -> int:
     user = sync_get_user(uid)
     plan = user.get("plan", "free")
@@ -423,3 +437,7 @@ def sync_add_chat_history(uid: int, role: str, content: str, limit: int = 10):
         },
         upsert=True
     )
+
+def sync_clear_chat_history(uid: int):
+    db = get_sync_db()
+    db.users.update_one({"uid": uid}, {"$set": {"chat_history": []}})

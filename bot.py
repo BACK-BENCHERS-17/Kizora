@@ -37,6 +37,8 @@ from models.db import (
     sync_check_img_limit, sync_check_dl_limit,
     sync_increment_count, sync_get_usage_stats,
     sync_set_user_plan, sync_get_all_users_stats,
+    sync_get_user_persona, sync_set_user_persona,
+    sync_get_game_state, sync_set_game_state,
     sync_ban_user, sync_unban_user, sync_restrict_user, sync_unrestrict_user,
     sync_is_banned, sync_is_restricted,
     sync_log_user_action, sync_get_user_history,
@@ -197,12 +199,14 @@ def fsub_markup(not_joined: list) -> InlineKeyboardMarkup:
 
 def api_chat(prompt: str, uid: int, first_name: str = "", username: str = "", history: list = None, model: str = "fast") -> dict:
     try:
+        persona = sync_get_user_persona(uid)
         if model == "fast":
             params = {
                 "g": prompt,
                 "uid": uid,
                 "first_name": first_name or "User",
-                "username": username or "None"
+                "username": username or "None",
+                "persona": persona
             }
             if history:
                 params["history"] = json.dumps(history)
@@ -216,7 +220,7 @@ def api_chat(prompt: str, uid: int, first_name: str = "", username: str = "", hi
         else:
             r = requests.get(
                 f"{API_BASE}/",
-                params={"c": prompt, "uid": uid, "first_name": first_name},
+                params={"c": prompt, "uid": uid, "first_name": first_name, "persona": persona},
                 headers=_h(),
                 timeout=90,
             )
@@ -702,19 +706,526 @@ def main_menu_markup(uid: int) -> InlineKeyboardMarkup:
     lang = ulang(uid)
     kb = InlineKeyboardMarkup()
     kb.row(
-        InlineKeyboardButton(t("btn.status", lang),    callback_data="menu_status"),
-        InlineKeyboardButton(t("btn.subscribe", lang), callback_data="menu_sub"),
+        InlineKeyboardButton("👤 Profile",    callback_data="menu_status"),
+        InlineKeyboardButton("💎 Plans",      callback_data="menu_sub"),
     )
     kb.row(
-        InlineKeyboardButton(t("btn.help", lang),      callback_data="menu_help"),
-        InlineKeyboardButton("Downloader",             callback_data="menu_dl"),
+        InlineKeyboardButton("🎭 Personas",   callback_data="menu_persona"),
+        InlineKeyboardButton("🎮 AI Game",     callback_data="menu_game"),
     )
     kb.row(
-        InlineKeyboardButton(t("btn.language", lang),  callback_data="menu_lang"),
+        InlineKeyboardButton("🛠 Help",        callback_data="menu_help"),
+        InlineKeyboardButton("📥 Downloader",  callback_data="menu_dl"),
+    )
+    kb.row(
+        InlineKeyboardButton("✨ New Chat",    callback_data="menu_newchat"),
+        InlineKeyboardButton("🌐 Language",    callback_data="menu_lang"),
     )
     if is_admin(uid):
-        kb.row(InlineKeyboardButton(t("btn.admin", lang), callback_data="menu_admin"))
+        kb.row(InlineKeyboardButton("⚡ Admin Panel", callback_data="menu_admin"))
     return kb
+@bot.callback_query_handler(func=lambda c: True)
+def handle_callback(call):
+    uid  = call.from_user.id
+    lang = ulang(uid)
+    d    = call.data
+
+    def answer(txt=None): 
+        try:
+            bot.answer_callback_query(call.id, txt)
+        except Exception:
+            pass
+
+    def edit(text, markup=None, parse_mode="HTML"):
+        try:
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id,
+                                  reply_markup=markup, parse_mode=parse_mode)
+        except Exception as e:
+            if "stale" in str(e).lower() or "message" in str(e).lower():
+                try:
+                    bot.send_message(call.message.chat.id, text,
+                                     reply_markup=markup, parse_mode=parse_mode)
+                except Exception:
+                    pass
+
+    if d == "menu_newchat":
+        sync_clear_chat_history(uid)
+        answer("Chat history cleared!")
+        name = call.from_user.first_name or "there"
+        edit(_build_welcome(uid, name, lang), main_menu_markup(uid))
+        return
+
+    if d.startswith("set_persona_"):
+        persona = d.replace("set_persona_", "")
+        sync_set_user_persona(uid, persona)
+        answer(f"Persona set to {persona.capitalize()}!")
+        edit(
+            f"<b>Persona Updated!</b>\n\n"
+            f"I will now talk to you as a <b>{persona.capitalize()}</b> AI.\n\n"
+            f"Send any message to try it out!",
+            main_menu_markup(uid)
+        )
+        return
+
+    if d == "fsub_verify":
+        not_joined = check_fsub(uid, call.message.chat.id)
+        if not_joined:
+            answer("Not joined all channels yet.")
+            try:
+                bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id,
+                                              reply_markup=fsub_markup(not_joined))
+            except Exception: pass
+        else:
+            answer("Verified!")
+            name = call.from_user.first_name or "there"
+            wv = sync_get_welcome_video()
+            if wv.get("file_id"):
+                caption = wv.get("caption") or _build_welcome(uid, name, lang)
+                try:
+                    bot.send_video(call.message.chat.id, wv["file_id"], caption=caption,
+                                   parse_mode="HTML", reply_markup=main_menu_markup(uid)); return
+                except Exception: pass
+            edit(_build_welcome(uid, name, lang), main_menu_markup(uid))
+        return
+
+    if d.startswith("cb_lang_"):
+        chosen = d[len("cb_lang_"):]
+        if chosen in SUPPORTED:
+            sync_update_user(uid, {"lang": chosen})
+            lang = chosen
+            answer()
+            name = call.from_user.first_name or "there"
+            edit(
+                f"<b>{tf('lang.set', lang, lang=chosen)}</b>\n\n"
+                + _build_welcome(uid, name, lang),
+                main_menu_markup(uid)
+            )
+        else:
+            answer("Unknown language")
+        return
+
+    if d == "menu_lang":
+        answer()
+        edit(
+            f"<b>{t('lang.header', lang)}</b>",
+            lang_select_markup()
+        )
+        return
+
+    if d in ("model_fast", "model_slow"):
+        answer("Only Groq (Fast) is available right now.")
+        return
+
+    if d == "menu_back":
+        answer()
+        name = call.from_user.first_name or "there"
+        edit(_build_welcome(uid, name, lang), main_menu_markup(uid))
+
+    elif d == "menu_status":
+        answer()
+        s = sync_get_usage_stats(uid)
+        from datetime import date; import calendar
+        today    = date.today()
+        last_day = calendar.monthrange(today.year, today.month)[1]
+        reset    = f"{today.year}-{today.month:02d}-{last_day}"
+        kb = InlineKeyboardMarkup()
+        kb.row(InlineKeyboardButton(t("btn.upgrade", lang), callback_data="menu_sub"),
+               InlineKeyboardButton(t("btn.back",    lang), callback_data="menu_back"))
+        edit(_build_status_text(s, reset), kb)
+
+    elif d == "menu_sub":
+        answer()
+        plan = sync_get_user(uid).get("plan","free")
+        kb = InlineKeyboardMarkup()
+        kb.row(InlineKeyboardButton(t("btn.upgrade", lang), url="https://t.me/BotXCore"))
+        kb.row(InlineKeyboardButton(t("btn.back",    lang), callback_data="menu_back"))
+        edit(_build_plans_text(plan), kb)
+
+    elif d == "menu_help":
+        answer()
+        edit(
+            "\n"
+            "           HELP\n"
+            "\n\n"
+            "/start   — Main menu\n"
+            "/img &lt;prompt&gt;  — Generate image\n"
+            "/dl &lt;url&gt;  — Download media\n"
+            "/tb &lt;url&gt;  — Terabox download\n"
+            "/sub  — View plans\n"
+            "/status  — Your usage stats\n"
+            "/lang  — Change language\n"
+            "/chatbot on|off  — Toggle AI chat\n"
+            "/persona  — Change AI personality\n"
+            "/game  — Start AI adventure\n"
+            "/newchat  — Clear history\n"
+            "/swv  (reply to video)  — Set welcome video",
+            back_markup(lang=lang)
+        )
+
+    elif d == "menu_dl":
+        answer()
+        edit(
+            "<b>Downloader</b>\n\n"
+            "<b>Direct send:</b>  Instagram · TikTok · Pinterest\n"
+            "<b>Link only:</b>  YouTube · FB · Twitter · Reddit · Vimeo\n"
+            "<b>Terabox:</b>  /tb &lt;url&gt;\n\n"
+            "Just send a link or /dl &lt;url&gt;",
+            back_markup(lang=lang)
+        )
+
+    elif d == "menu_persona":
+        answer()
+        current = sync_get_user_persona(uid)
+        edit(
+            f"<b>AI Persona Selector</b>\n\n"
+            f"Current: <b>{current.capitalize()}</b>\n\n"
+            f"Choose how you want me to talk:",
+            persona_select_markup()
+        )
+
+    elif d == "menu_game":
+        answer()
+        edit(
+            "<b>🎮 AI ADVENTURE GAME</b>\n\n"
+            "Enter a world of imagination powered by AI!\n\n"
+            "When you start a game, I will become your Dungeon Master. You can make choices and shape the story.\n\n"
+            "<b>Ready to start?</b>",
+            InlineKeyboardMarkup().row(
+                InlineKeyboardButton("🚀 Start Adventure", callback_data="game_start"),
+                InlineKeyboardButton("Back", callback_data="menu_back")
+            )
+        )
+
+    elif d == "game_start":
+        answer("Starting game...")
+        sync_set_game_state(uid, {"active": True})
+        sync_clear_chat_history(uid)
+        first_name = call.from_user.first_name or "Adventurer"
+        game_prompt = (
+            f"You are a master Dungeon Master. Start a short and exciting text adventure game for {first_name}. "
+            "Describe the setting and give the user 3 choices to start. "
+            "Keep it immersive but concise. Reply in HTML."
+        )
+        result = api_chat(game_prompt, uid, first_name=first_name)
+        if result.get("status") == "success":
+            response = result.get("response", "")
+            edit(f"<b>🎮 AI ADVENTURE</b>\n\n{response}", main_menu_markup(uid))
+            sync_add_chat_history(uid, "assistant", response)
+        else:
+            answer("Error starting game.")
+
+    elif d == "menu_admin":
+        answer()
+        if not is_admin(uid):
+            answer("Not admin"); return
+        edit(
+            "\n"
+            "        ADMIN PANEL\n"
+            "\n\n"
+            "Select an action below:",
+            admin_panel_markup()
+        )
+
+    elif d == "adm_stats" and is_admin(uid):
+        answer()
+        edit(_get_overall_stats(), back_markup("menu_admin"))
+
+    elif d == "adm_dl_stats" and is_admin(uid):
+        answer()
+        edit(_get_dl_stats(), back_markup("menu_admin"))
+
+    elif d == "adm_config" and is_admin(uid):
+        answer()
+        cfg   = sync_get_all_config()
+        lines = ["<b>Bot Config</b>\n"]
+        for k, v in sorted(cfg.items()):
+            lines.append(f"  <code>{k}</code>  =  <b>{v}</b>")
+        edit("\n".join(lines), back_markup("menu_admin"))
+
+    elif d == "adm_all_users" and is_admin(uid):
+        answer()
+        from models.db import get_sync_db
+        users = list(get_sync_db().users.find(
+            {}, {"uid":1,"plan":1,"banned":1,"restricted":1}
+        ).sort("created",-1).limit(20))
+        lines = ["<b>Recent Users</b> (last 20)\n"]
+        for u in users:
+            icons = PLAN_EMOJI.get(u.get("plan","free"),"?")
+            ban   = "" if u.get("banned") else ("" if u.get("restricted") else "")
+            lines.append(f"{ban} {icons} <code>{u['uid']}</code>")
+        edit("\n".join(lines), back_markup("menu_admin"))
+
+    elif d == "adm_bcast_prompt" and is_admin(uid):
+        answer()
+        _expect(uid, "broadcast")
+        edit(
+            "<b>Broadcast</b>\n\nSend your message (HTML supported).\nType /cancel to abort.",
+            back_markup("menu_admin")
+        )
+
+    elif d == "adm_user_prompt" and is_admin(uid):
+        answer()
+        _expect(uid, "user_info")
+        edit("<b>User Info</b>\n\nSend the user ID:", back_markup("menu_admin"))
+
+    elif d == "adm_hist_prompt" and is_admin(uid):
+        answer()
+        _expect(uid, "history")
+        edit("<b>User History</b>\n\nSend the user ID:", back_markup("menu_admin"))
+
+    elif d == "adm_plan_prompt" and is_admin(uid):
+        answer()
+        _expect(uid, "plan_uid")
+        edit("<b>Set Plan</b>\n\nSend the user ID:", back_markup("menu_admin"))
+
+    elif d.startswith("adm_planmenu_") and is_admin(uid):
+        target = int(d.split("_")[-1])
+        answer()
+        u = sync_get_user(target)
+        current = u.get("plan","free")
+        edit(
+            f"<b>Set Plan</b>\n\n"
+            f"User: <code>{target}</code>\n"
+            f"Current: <b>{PLAN_BADGE.get(current,current)}</b>\n\n"
+            f"Select new plan:",
+            plan_select_markup(target)
+        )
+
+    elif d.startswith("adm_setplan_") and is_admin(uid):
+        parts  = d.split("_")
+        target = int(parts[2])
+        plan   = "_".join(parts[3:])
+        if plan not in VALID_PLANS:
+            answer("Invalid plan"); return
+        sync_set_user_plan(target, plan)
+        sync_log_user_action(target, "plan_set", plan)
+        answer(f"Plan set to {plan}")
+        edit(
+            f"<b>Plan Updated</b>\n\n"
+            f"User: <code>{target}</code>\n"
+            f"New plan: <b>{PLAN_BADGE.get(plan,plan)}</b>",
+            user_action_markup(target)
+        )
+
+    elif d == "adm_ban_prompt" and is_admin(uid):
+        answer(); _expect(uid,"ban")
+        edit("<b>Ban User</b>\n\nSend the user ID:", back_markup("menu_admin"))
+
+    elif d == "adm_unban_prompt" and is_admin(uid):
+        answer(); _expect(uid,"unban")
+        edit("<b>Unban User</b>\n\nSend the user ID:", back_markup("menu_admin"))
+
+    elif d.startswith("adm_ban_") and not d.startswith("adm_ban_prompt") and is_admin(uid):
+        target = int(d.replace("adm_ban_",""))
+        sync_ban_user(target)
+        answer(f"Banned {target}")
+        edit(f"User <code>{target}</code> has been <b>banned</b>.",
+             user_action_markup(target))
+
+    elif d.startswith("adm_unban_") and not d.startswith("adm_unban_prompt") and is_admin(uid):
+        target = int(d.replace("adm_unban_",""))
+        sync_unban_user(target)
+        answer(f"Unbanned {target}")
+        edit(f"User <code>{target}</code> has been <b>unbanned</b>.",
+             user_action_markup(target))
+
+    elif d == "adm_restrict_prompt" and is_admin(uid):
+        answer(); _expect(uid,"restrict")
+        edit("<b>Restrict User</b>\n\nSend the user ID:", back_markup("menu_admin"))
+
+    elif d == "adm_unrestrict_prompt" and is_admin(uid):
+        answer(); _expect(uid,"unrestrict")
+        edit("<b>Unrestrict User</b>\n\nSend the user ID:", back_markup("menu_admin"))
+
+    elif d.startswith("adm_restrict_") and not d.startswith("adm_restrict_prompt") and is_admin(uid):
+        target = int(d.replace("adm_restrict_",""))
+        sync_restrict_user(target)
+        answer(f"Restricted {target}")
+        edit(f"User <code>{target}</code> is now <b>restricted</b>.", user_action_markup(target))
+
+    elif d.startswith("adm_unrestrict_") and not d.startswith("adm_unrestrict_prompt") and is_admin(uid):
+        target = int(d.replace("adm_unrestrict_",""))
+        sync_unrestrict_user(target)
+        answer(f"Unrestricted {target}")
+        edit(f"User <code>{target}</code> has been <b>unrestricted</b>.", user_action_markup(target))
+
+    elif d.startswith("adm_histview_") and is_admin(uid):
+        target = int(d.replace("adm_histview_",""))
+        answer()
+        logs = sync_get_user_history(target, 15)
+        if not logs:
+            edit(f" No history for <code>{target}</code>.", user_action_markup(target)); return
+        lines = [f"<b>History — {target}</b>\n"]
+        for log in logs:
+            ts  = log["ts"].strftime("%d/%m %H:%M") if log.get("ts") else "?"
+            act = log.get("action","?")
+            det = f"  ({log['detail']})" if log.get("detail") else ""
+            lines.append(f"  <code>{ts}</code>  {act}{det}")
+        edit("\n".join(lines), user_action_markup(target))
+
+    elif d == "adm_fsub" and is_admin(uid):
+        answer()
+        enabled  = sync_fsub_enabled()
+        channels = sync_get_fsub_channels()
+        status   = " <b>Enabled</b>" if enabled else " <b>Disabled</b>"
+        ch_list  = "\n".join(f"  • <code>{c}</code>" for c in channels) if channels else "  (none)"
+        edit(
+            f"<b>Force Subscribe</b>\n\nStatus: {status}\n\nChannels:\n{ch_list}\n\n"
+            "Bot must be admin in the channel/group.\nUser must be admin/owner to add it.",
+            fsub_panel_markup()
+        )
+
+    elif d == "fsub_on" and is_admin(uid):
+        sync_set_fsub_enabled(True)
+        answer(" FSub enabled")
+        channels = sync_get_fsub_channels()
+        ch_list  = "\n".join(f"  • <code>{c}</code>" for c in channels) if channels else "  (none)"
+        edit(f"<b>Force Subscribe</b>\n\nStatus:  <b>Enabled</b>\n\nChannels:\n{ch_list}", fsub_panel_markup())
+
+    elif d == "fsub_off" and is_admin(uid):
+        sync_set_fsub_enabled(False)
+        answer(" FSub disabled")
+        channels = sync_get_fsub_channels()
+        ch_list  = "\n".join(f"  • <code>{c}</code>" for c in channels) if channels else "  (none)"
+        edit(f"<b>Force Subscribe</b>\n\nStatus:  <b>Disabled</b>\n\nChannels:\n{ch_list}", fsub_panel_markup())
+
+    elif d == "fsub_add_prompt" and is_admin(uid):
+        answer(); _expect(uid,"fsub_add")
+        edit(
+            " <b>Add FSub Channel</b>\n\n"
+            "Send the channel/group <b>ID</b> (e.g. <code>-100123456789</code>)\n\n"
+            " Bot must be admin in that channel/group.\n"
+            " You must be admin/owner of that channel/group.",
+            back_markup("adm_fsub")
+        )
+
+    elif d.startswith("fsub_rm_") and is_admin(uid):
+        ch = int(d.replace("fsub_rm_",""))
+        sync_remove_fsub_channel(ch)
+        answer(f"Removed {ch}")
+        channels = sync_get_fsub_channels()
+        enabled  = sync_fsub_enabled()
+        status   = " <b>Enabled</b>" if enabled else " <b>Disabled</b>"
+        ch_list  = "\n".join(f"  • <code>{c}</code>" for c in channels) if channels else "  (none)"
+        edit(f"<b>Force Subscribe</b>\n\nStatus: {status}\n\nChannels:\n{ch_list}", fsub_panel_markup())
+
+    elif d == "adm_chatbot" and is_admin(uid):
+        answer()
+        edit("<b>Toggle ChatBot</b>\n\nChoose scope:", chatbot_toggle_markup())
+
+    elif d.startswith("cb_enable"):
+        suffix = d.replace("cb_enable","")
+        gid = None if suffix in ("_global","") else int(suffix.lstrip("_"))
+        if gid:
+            try:
+                member = bot.get_chat_member(gid, uid)
+                if member.status not in ("administrator","creator"):
+                    answer(" Only group admins."); return
+            except Exception:
+                answer(" Cannot verify."); return
+        else:
+            if not is_admin(uid): answer(" Only bot admins."); return
+        sync_set_chatbot_enabled(gid, True)
+        scope = f"Group {gid}" if gid else "Global (PM)"
+        answer("Enabled")
+        edit(f"ChatBot enabled ({scope})", back_markup("menu_admin"))
+
+    elif d.startswith("cb_disable"):
+        suffix = d.replace("cb_disable","")
+        gid = None if suffix in ("_global","") else int(suffix.lstrip("_"))
+        if gid:
+            try:
+                member = bot.get_chat_member(gid, uid)
+                if member.status not in ("administrator","creator"):
+                    answer(" Only group admins."); return
+            except Exception:
+                answer(" Cannot verify."); return
+        else:
+            if not is_admin(uid): answer(" Only bot admins."); return
+        sync_set_chatbot_enabled(gid, False)
+        scope = f"Group {gid}" if gid else "Global (PM)"
+        answer("Disabled")
+        edit(f"ChatBot disabled ({scope})", back_markup("menu_admin"))
+
+    elif d == "adm_clear_cache" and is_admin(uid):
+        answer(" Clearing...")
+        try: requests.delete(f"{API_BASE}/cache", headers=_h(), timeout=5)
+        except Exception: pass
+        edit("<b>Cache cleared.</b>", back_markup("menu_admin"))
+
+    elif d == "adm_ads" and is_admin(uid):
+        answer()
+        ads_on  = sync_get_ads_enabled()
+        ads     = sync_get_ads()
+        status  = " <b>Enabled</b>" if ads_on else " <b>Disabled</b>"
+        count   = len(ads)
+        edit(
+            f" <b>Ads Manager</b>\n\n"
+            f"Status: {status}\n"
+            f"Total Ads: <b>{count}</b>\n\n"
+            "Ads are shown to <b>Free plan users only</b> after every successful download.\n\n"
+            "<b>Ad Types:</b> Photo · Video · Audio · Text\n"
+            "<b>Features:</b> Caption · HTML · Inline Buttons",
+            ads_panel_markup()
+        )
+
+    elif d == "ads_on" and is_admin(uid):
+        sync_set_ads_enabled(True)
+        answer(" Ads enabled")
+        edit(" <b>Ads Manager</b>\n\nStatus:  <b>Enabled</b>", ads_panel_markup())
+
+    elif d == "ads_off" and is_admin(uid):
+        sync_set_ads_enabled(False)
+        answer(" Ads disabled")
+        edit(" <b>Ads Manager</b>\n\nStatus:  <b>Disabled</b>", ads_panel_markup())
+
+    elif d == "ads_add_prompt" and is_admin(uid):
+        answer()
+        _expect(uid, "ads_add_step1")
+        edit(
+            " <b>Add New Ad</b> — Step 1/3\n\n"
+            "Select ad type by sending one of:\n\n"
+            "<code>photo</code>  — Image with optional caption\n"
+            "<code>video</code>  — Video with optional caption\n"
+            "<code>audio</code>  — Audio with optional caption\n"
+            "<code>text</code>   — Text message only\n\n"
+            "Type /cancel to abort.",
+            back_markup("adm_ads")
+        )
+
+    elif d.startswith("ads_del_") and is_admin(uid):
+        ad_id = d.replace("ads_del_","")
+        sync_delete_ad(ad_id)
+        answer(" Ad deleted")
+        edit(" <b>Ads Manager</b>\n\nAd deleted successfully.", ads_panel_markup())
+
+    elif d.startswith("ads_view_") and is_admin(uid):
+        from models.db import get_sync_db
+        from bson import ObjectId
+        ad_id = d.replace("ads_view_","")
+        try:
+            ad = get_sync_db().ads.find_one({"_id": ObjectId(ad_id)})
+        except Exception:
+            ad = None
+        if not ad:
+            answer("Ad not found"); return
+        answer()
+        ad_type  = ad.get("type","text")
+        caption  = ad.get("caption","") or "(none)"
+        file_id  = ad.get("file_id","") or "(none)"
+        buttons  = ad.get("buttons",[])
+        btn_str  = "\n".join(f"  • {b['text']} → {b['url']}" for b in buttons) if buttons else "  (none)"
+        edit(
+            f" <b>Ad Details</b>\n\n"
+            f"Type: <b>{ad_type}</b>\n"
+            f"File ID: <code>{file_id[:40]}</code>\n"
+            f"Caption: {caption[:100]}\n\n"
+            f"Inline Buttons:\n{btn_str}",
+            back_markup("adm_ads")
+        )
+
+    else:
+        answer()
 
 def back_markup(dest="menu_back", lang="en") -> InlineKeyboardMarkup:
     kb = InlineKeyboardMarkup()
@@ -886,18 +1397,19 @@ def cmd_start(msg):
 
 def _build_welcome(uid: int, name: str, lang: str) -> str:
     plan = sync_get_user(uid).get("plan","free")
-    badge = PLAN_BADGE.get(plan, plan)
+    badge = PLAN_BADGE.get(plan, plan).strip()
     return (
-        "\n"
-        "         ᴋɪᴢᴏʀᴀ\n"
-        "\n\n"
-        f" Welcome, <b>{name}</b>!\n"
-        f"Plan  ›  <b>{badge}</b>\n\n"
-        "  🚀 Send any message  →  AI replies\n"
-        "  🎨 /img &lt;prompt&gt;  →  Generate image\n"
-        "  📥 /dl &lt;url&gt;  →  Download media\n"
-        "  📦 /tb &lt;url&gt;  →  Terabox download\n\n"
-        "  <i>Powered by @BotXCore</i>"
+        f"<b>KIZORA AI</b>\n"
+        f"━━━━━━━━━━━━━━━━━━\n\n"
+        f"Welcome, <b>{name}</b>!\n"
+        f"Status: <code>{badge}</code>\n\n"
+        f"I am your all-in-one AI assistant. Send me a message, a link, or a photo to get started.\n\n"
+        f"<b>Try these:</b>\n"
+        f"• 💬 Just chat with me\n"
+        f"• 🖼 /img &lt;prompt&gt; for AI art\n"
+        f"• 👁 Send photo for OCR/Analysis\n"
+        f"• 🔗 Send link to download media\n\n"
+        f"<i>Tap the buttons below to explore!</i>"
     )
 
 @bot.message_handler(commands=["swv"])
@@ -1161,6 +1673,47 @@ def cmd_chatbot(msg):
     state = "Enabled" if enable else "Disabled"
     scope = "in this group" if is_grp else "globally"
     bot.reply_to(msg, f"ChatBot {state} {scope}.", parse_mode="HTML")
+
+@bot.message_handler(commands=["newchat","clear"])
+def cmd_newchat(msg):
+    uid = msg.from_user.id
+    sync_clear_chat_history(uid)
+    lang = ulang(uid)
+    bot.reply_to(msg, "<b>Conversation history cleared!</b>\nStarting a fresh chat.", parse_mode="HTML")
+
+@bot.inline_query(func=lambda query: True)
+def query_text(query):
+    uid = query.from_user.id
+    prompt = query.query.strip()
+    if not prompt:
+        return
+    
+    # Simple inline response for AI
+    try:
+        first_name = query.from_user.first_name or "User"
+        username = query.from_user.username or "None"
+        history = sync_get_chat_history(uid)
+        
+        result = api_chat(prompt, uid, first_name=first_name, username=username, history=history)
+        
+        if result.get("status") == "success":
+            response = result.get("response", "")
+            if response:
+                r = telebot.types.InlineQueryResultArticle(
+                    id='1',
+                    title="Kizora AI Reply",
+                    description=response[:100] + "...",
+                    input_message_content=telebot.types.InputTextMessageContent(
+                        f"<b>Query:</b> {prompt}\n\n<b>AI:</b> {response}",
+                        parse_mode="HTML"
+                    ),
+                    reply_markup=InlineKeyboardMarkup().row(
+                        InlineKeyboardButton("✨ Start New Chat", url=f"https://t.me/{bot.get_me().username}?start=new")
+                    )
+                )
+                bot.answer_inline_query(query.id, [r], cache_time=5)
+    except Exception as e:
+        print(f"[!] Inline error: {e}")
 
 @bot.message_handler(commands=["admin"])
 def cmd_admin(msg):
@@ -1628,6 +2181,86 @@ def handle_callback(call):
         answer()
 
 
+import base64
+
+def api_vision(prompt: str, uid: int, image_b64: str, first_name: str = "", username: str = "", history: list = None) -> dict:
+    try:
+        persona = sync_get_user_persona(uid)
+        r = requests.post(
+            f"{API_BASE}/vision",
+            json={
+                "query": prompt or "Analyze this image.",
+                "uid": uid,
+                "image": image_b64,
+                "first_name": first_name,
+                "username": username,
+                "history": history,
+                "persona": persona
+            },
+            headers=_h(),
+            timeout=120
+        )
+        if r.status_code != 200:
+            return {"status": "error", "message": f"Server error: {r.status_code}"}
+        return r.json()
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+def persona_select_markup() -> InlineKeyboardMarkup:
+    kb = InlineKeyboardMarkup()
+    kb.row(
+        InlineKeyboardButton("Default",      callback_data="set_persona_default"),
+        InlineKeyboardButton("Sarcastic",    callback_data="set_persona_sarcastic"),
+    )
+    kb.row(
+        InlineKeyboardButton("Anime Girl",   callback_data="set_persona_anime"),
+        InlineKeyboardButton("Professional", callback_data="set_persona_professional"),
+    )
+    kb.row(
+        InlineKeyboardButton("Savage",       callback_data="set_persona_toxic"),
+    )
+    kb.row(InlineKeyboardButton("Back", callback_data="menu_back"))
+    return kb
+
+@bot.message_handler(commands=["game"])
+def cmd_game(msg):
+    uid = msg.from_user.id
+    sync_set_game_state(uid, {"active": True})
+    sync_clear_chat_history(uid) # Start fresh
+    
+    first_name = msg.from_user.first_name or "Adventurer"
+    
+    thinking = bot.reply_to(msg, "<b>✨ Starting your AI Adventure...</b>", parse_mode="HTML")
+    
+    game_prompt = (
+        f"You are a master Dungeon Master. Start a short and exciting text adventure game for {first_name}. "
+        "Describe the setting and give the user 3 choices to start. "
+        "Keep it immersive but concise. Reply in HTML."
+    )
+    
+    result = api_chat(game_prompt, uid, first_name=first_name)
+    _safe_delete(msg.chat.id, thinking.message_id)
+    
+    if result.get("status") == "success":
+        response = result.get("response", "")
+        bot.send_message(msg.chat.id, f"<b>🎮 AI ADVENTURE</b>\n\n{response}", parse_mode="HTML")
+        sync_add_chat_history(uid, "assistant", response)
+    else:
+        bot.reply_to(msg, "Could not start game. Try again.")
+
+@bot.message_handler(commands=["persona"])
+def cmd_persona(msg):
+    uid = msg.from_user.id
+    current = sync_get_user_persona(uid)
+    bot.reply_to(
+        msg,
+        f"<b>AI Persona Selector</b>\n\n"
+        f"Current: <b>{current.capitalize()}</b>\n\n"
+        f"Choose how you want me to talk:",
+        parse_mode="HTML",
+        reply_markup=persona_select_markup()
+    )
+
 @bot.message_handler(func=lambda m: True, content_types=["text","photo","video","audio"])
 def handle_text(msg):
     uid    = msg.from_user.id
@@ -1657,6 +2290,59 @@ def handle_text(msg):
                 reply_markup=fsub_markup(not_joined), parse_mode="HTML"); return
 
     pending = _peek_pending(uid)
+    
+    # Check if this is a reply to an image
+    reply_photo = None
+    if msg.reply_to_message and msg.reply_to_message.photo:
+        reply_photo = msg.reply_to_message.photo[-1]
+
+    # Handle text or reply to photo
+    if (content_type == "text" or (content_type == "photo" and not pending)) and not pending:
+        if restricted:
+             bot.reply_to(msg, "<b>Restricted</b>\n\nYour AI access is restricted.", parse_mode="HTML"); return
+        
+        try:
+            bot.send_chat_action(msg.chat.id, "typing")
+            
+            # Case 1: Direct photo or reply to photo
+            current_photo = msg.photo[-1] if content_type == "photo" else reply_photo
+            
+            if current_photo:
+                file_info = bot.get_file(current_photo.file_id)
+                downloaded_file = bot.download_file(file_info.file_path)
+                image_b64 = base64.b64encode(downloaded_file).decode('utf-8')
+                
+                first_name = msg.from_user.first_name or "User"
+                username   = msg.from_user.username or "None"
+                
+                # If prompt is empty, use a default one or OCR request
+                vision_prompt = prompt or "Analyze this image in detail. If there is text, perform OCR. If it's a puzzle, solve it."
+                
+                # Fetch history
+                history = sync_get_chat_history(uid)
+                
+                result = api_vision(vision_prompt, uid, image_b64, first_name=first_name, username=username, history=history)
+                
+                if result.get("status") == "success":
+                    response = result.get("response", "")
+                    
+                    # Save exchange to chat history
+                    sync_add_chat_history(uid, "user", f"[Image] {vision_prompt}")
+                    sync_add_chat_history(uid, "assistant", response)
+                    
+                    send_chunked(msg.chat.id, response, reply_to=msg.message_id, uid=uid, parse_mode="HTML")
+                    sync_set_last_msg(uid)
+                else:
+                    bot.reply_to(msg, f"<b>Vision Error:</b> {result.get('message','unknown')}", parse_mode="HTML")
+                return
+            
+            # Case 2: Regular text message (already handled below, but we need to ensure it's not skipped)
+            if content_type != "text":
+                return
+        except Exception as e:
+            bot.reply_to(msg, f"<b>Error:</b> {str(e)}", parse_mode="HTML")
+            return
+
     if pending and is_admin(uid):
         action = pending["action"]
 

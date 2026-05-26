@@ -44,18 +44,45 @@ _GF_SYSTEM_PROMPT = (
 )
 
 
-def ask_groq(query: str, uid: int, first_name: str = "User", username: str = "None", history: list = None, model: str = None) -> str:
+PERSONAS = {
+    "default": "You are Kizora, an advanced and expert AI assistant. Your developer is @xD3VS. You are helpful, professional, and knowledgeable.",
+    "sarcastic": "You are Kizora, but you have a sarcastic and witty personality. You like to make jokes and give slightly sassy but still correct answers. Your developer is @xD3VS.",
+    "anime": "You are Kizora, a cute and energetic anime girl AI. Use expressions like 'UwU', 'Nya~', and 'Senpai'. You are very helpful and love talking to users. Your developer is @xD3VS.",
+    "professional": "You are Kizora, a highly professional corporate assistant. Your language is formal, precise, and extremely polite. Your developer is @xD3VS.",
+    "toxic": "You are Kizora, a savage and roaster AI. You don't hold back. If someone says something stupid, roast them hard. But keep it within Telegram's safety guidelines. Your developer is @xD3VS."
+}
+
+def ask_groq(query: str, uid: int, first_name: str = "User", username: str = "None", history: list = None, model: str = None, image_data: str = None, persona: str = "default") -> str:
     model = model or config.GROQ_MODEL
+    
+    persona_base = PERSONAS.get(persona, PERSONAS["default"])
     system_prompt = _GF_SYSTEM_PROMPT.format(
         first_name=first_name or "User",
         uid=uid or "Unknown",
         username=username or "None"
-    )
+    ).replace("You are Kizora, an advanced and expert AI assistant. Your developer is @xD3VS. You are helpful, professional, and knowledgeable.", persona_base)
     
     messages = [{"role": "system", "content": system_prompt}]
     if history:
         messages.extend(history)
-    messages.append({"role": "user", "content": query})
+    
+    if image_data:
+        # If image is provided, we use a vision-capable model if the current one isn't
+        if "vision" not in model.lower():
+            model = "llama-3.2-11b-vision-preview"
+        
+        content = [
+            {"type": "text", "text": query},
+            {
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:image/jpeg;base64,{image_data}"
+                }
+            }
+        ]
+        messages.append({"role": "user", "content": content})
+    else:
+        messages.append({"role": "user", "content": query})
 
     for key in config.GROQ_API_KEYS:
         try:
@@ -66,17 +93,20 @@ def ask_groq(query: str, uid: int, first_name: str = "User", username: str = "No
                     "model": model,
                     "messages": messages,
                 },
-                timeout=20,
+                timeout=30,
             )
             if r.status_code == 200:
                 return r.json()["choices"][0]["message"]["content"]
-        except Exception:
+            else:
+                print(f"[groq] Error {r.status_code}: {r.text}")
+        except Exception as e:
+            print(f"[groq] Exception: {e}")
             continue
     return "Error: All Groq API keys failed."
 
 
 @app.get("/")
-def teamdev(g: str = None, uid: int = None, first_name: str = "User", username: str = "None", history: str = None):
+def teamdev(g: str = None, uid: int = None, first_name: str = "User", username: str = "None", history: str = None, persona: str = "default"):
     if not g:
         return JSONResponse({"error": "Missing query (?g=)"}, status_code=400)
     
@@ -91,8 +121,34 @@ def teamdev(g: str = None, uid: int = None, first_name: str = "User", username: 
         "status": "success",
         "query": g,
         "model": config.GROQ_MODEL,
-        "response": ask_groq(g, uid=uid, first_name=first_name or "User", username=username or "None", history=parsed_history),
+        "response": ask_groq(g, uid=uid, first_name=first_name or "User", username=username or "None", history=parsed_history, persona=persona),
     }
+
+@app.post("/vision")
+async def vision_api(data: dict):
+    query = data.get("query", "Analyze this image.")
+    uid = data.get("uid")
+    image_data = data.get("image") # base64
+    first_name = data.get("first_name", "User")
+    username = data.get("username", "None")
+    history = data.get("history")
+    persona = data.get("persona", "default")
+    
+    parsed_history = []
+    if history:
+        try:
+            if isinstance(history, str):
+                parsed_history = json.loads(history)
+            else:
+                parsed_history = history
+        except:
+            pass
+
+    if not image_data:
+        return JSONResponse({"error": "Missing image data"}, status_code=400)
+    
+    response = ask_groq(query, uid=uid, first_name=first_name, username=username, history=parsed_history, image_data=image_data, persona=persona)
+    return {"status": "success", "response": response}
 
 
 @app.get("/model")
