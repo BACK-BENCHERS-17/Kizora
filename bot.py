@@ -1681,7 +1681,7 @@ def cmd_newchat(msg):
     lang = ulang(uid)
     bot.reply_to(msg, "<b>Conversation history cleared!</b>\nStarting a fresh chat.", parse_mode="HTML")
 
-@bot.inline_query(func=lambda query: True)
+@bot.inline_query_handler(func=lambda query: True)
 def query_text(query):
     uid = query.from_user.id
     prompt = query.query.strip()
