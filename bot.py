@@ -17,6 +17,7 @@ import os
 import re
 import io
 import json
+import base64
 import requests
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
