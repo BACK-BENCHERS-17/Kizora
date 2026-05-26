@@ -2187,4 +2187,8 @@ if __name__ == "__main__":
     print("                   ᴋɪᴢᴏʀᴀ")
     print("")
     print("[+] Bot running...")
+    try:
+        bot.delete_webhook(drop_pending_updates=True)
+    except Exception:
+        pass
     bot.infinity_polling(timeout=60, long_polling_timeout=30, skip_pending=True)
